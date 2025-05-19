@@ -9,6 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@mantine/core": "^8.0.1",
+    "@mantine/form": "^8.0.1",
+    "@mantine/hooks": "^8.0.1",
+    "@mantine/modals": "^8.0.1",
+    "@mantine/notifications": "^8.0.1",
     "@prisma/client": "^6.8.2",
     "axios": "^1.9.0",
     "bcryptjs": "^3.0.2",
@@ -17,7 +22,7 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.14.1",
-    "next": "15.3.2",
+    "next": "^15.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
@@ -27,12 +32,16 @@
     "@types/cors": "^2.8.18",
     "@types/express": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.9",
+    "@types/next": "^9.0.0",
     "@types/node": "^20.17.47",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
     "nodemon": "^3.1.10",
+    "postcss": "^8.5.3",
+    "postcss-preset-mantine": "^1.17.0",
+    "postcss-simple-vars": "^7.0.1",
     "prisma": "^6.8.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
