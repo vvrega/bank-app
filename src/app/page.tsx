@@ -1,9 +1,10 @@
 import ExchangeRates from '@/components/ExchangeRates';
+import { HomePage } from '@/components/HomePage/HomePage';
 
 export default function Home() {
   return (
     <main>
-      <h1>Bank App</h1>
+      <HomePage />
       {/* <ExchangeRates /> */}
     </main>
   );
