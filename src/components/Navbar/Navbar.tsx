@@ -1,7 +1,7 @@
 'use client';
 import styles from './Navbar.module.css';
 import NextImage from 'next/image';
-import { Group, Tabs, Image, Text } from '@mantine/core';
+import { Group, Tabs, Image, Text, Box } from '@mantine/core';
 import avatarImg from '../assets/avatar.jpg';
 import {
   IconHome,
@@ -13,7 +13,7 @@ import { HomePanel } from './HomePanel/HomePanel';
 
 const Navbar = () => {
   return (
-    <div className={styles.mainContainer}>
+    <Box className={styles.mainContainer}>
       <Group w={200}>
         {/* <Image
           component={NextImage}
@@ -90,7 +90,7 @@ const Navbar = () => {
           Settings tab content
         </Tabs.Panel>
       </Tabs>
-    </div>
+    </Box>
   );
 };
 

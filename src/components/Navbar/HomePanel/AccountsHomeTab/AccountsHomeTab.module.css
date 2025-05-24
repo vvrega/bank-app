@@ -1,8 +1,11 @@
 .mainContainer {
   background-color: white;
-  height: 50vh;
+  height: 60vh;
   border-radius: 6px;
   margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .currencyDescription {
