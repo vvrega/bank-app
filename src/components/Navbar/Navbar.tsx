@@ -1,20 +1,44 @@
 'use client';
 import styles from './Navbar.module.css';
-import { Group, Tabs, Image } from '@mantine/core';
+import NextImage from 'next/image';
+import { Group, Tabs, Image, Text } from '@mantine/core';
+import avatarImg from '../assets/avatar.jpg';
 import {
   IconHome,
   IconDatabaseDollar,
   IconSettings,
   IconLogout,
 } from '@tabler/icons-react';
-import React from 'react';
 import { HomePanel } from './HomePanel/HomePanel';
 
 const Navbar = () => {
   return (
     <div className={styles.mainContainer}>
-      <Group>
-        <Image src="@assets/avatar.jpg" alt="User avatar" />
+      <Group w={200}>
+        {/* <Image
+          component={NextImage}
+          src={avatarImg}
+          alt="User avatar"
+          w={56}
+          h={56}
+          mb={27}
+        /> */}
+        <Group
+          display="flex"
+          dir="column"
+          w={200}
+          gap={5}
+          align="flex-start"
+          justify="flex-start"
+          mb={27}
+        >
+          <Text size="16px" fw={700} w={200}>
+            Hello,{' '}
+          </Text>
+          <Text size="16px" fw={700} w={200}>
+            Firstname Lastname!
+          </Text>
+        </Group>
       </Group>
       <Tabs
         variant="pills"

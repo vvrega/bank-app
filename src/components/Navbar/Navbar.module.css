@@ -18,9 +18,9 @@
 
 .tabsPanel {
   margin-left: 10%;
+  margin-top: -60px;
   width: 100%;
   max-width: 50vw;
-  background-color: pink;
 }
 
 .tabElement :global(.mantine-Tabs-tabSection) {

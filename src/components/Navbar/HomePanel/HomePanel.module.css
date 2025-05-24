@@ -1,0 +1,8 @@
+.homeTabElement:hover {
+  background-color: #f1f3f5;
+}
+
+.homeTabsList::before {
+  border: none !important;
+  box-shadow: none !important;
+}
