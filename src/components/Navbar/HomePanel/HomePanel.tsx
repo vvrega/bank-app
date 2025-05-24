@@ -2,6 +2,7 @@ import { Text, Tabs } from '@mantine/core';
 import { IconWallet, IconAddressBook } from '@tabler/icons-react';
 import { AccountsHomeTab } from './AccountsHomeTab/AccountsHomeTab';
 import styles from './HomePanel.module.css';
+import { ContactsHomeTab } from './ContactsHomeTab/ContactsHomeTab';
 
 export const HomePanel = () => {
   return (
@@ -32,7 +33,7 @@ export const HomePanel = () => {
         </Tabs.Panel>
 
         <Tabs.Panel value="contacts" className={styles.homeTabPanel}>
-          Contacts tab content
+          <ContactsHomeTab />
         </Tabs.Panel>
       </Tabs>
     </>
