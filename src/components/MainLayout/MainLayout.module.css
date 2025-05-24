@@ -1,0 +1,33 @@
+.mainContainer {
+  padding: 10px 20px;
+  margin: 5% 5%;
+}
+
+.tabsList {
+  width: 200px;
+}
+
+.tabElement {
+  color: black;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 16px;
+  height: 40px;
+  text-align: left;
+}
+
+.tabsPanel {
+  margin-left: 10%;
+  margin-top: -60px;
+  width: 100%;
+  max-width: 50vw;
+}
+
+.tabElement :global(.mantine-Tabs-tabSection) {
+  margin-right: 8px !important;
+}
+
+.tabElement :global(.mantine-Tabs-tabLabel) {
+  text-align: left !important;
+  justify-content: flex-start !important;
+}
