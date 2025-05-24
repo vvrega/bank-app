@@ -1,8 +1,6 @@
 'use client';
 import styles from './Navbar.module.css';
-import NextImage from 'next/image';
-import { Group, Tabs, Image, Text, Box } from '@mantine/core';
-import avatarImg from '../assets/avatar.jpg';
+import { Group, Tabs, Text, Box } from '@mantine/core';
 import {
   IconHome,
   IconDatabaseDollar,
@@ -15,14 +13,6 @@ const Navbar = () => {
   return (
     <Box className={styles.mainContainer}>
       <Group w={200}>
-        {/* <Image
-          component={NextImage}
-          src={avatarImg}
-          alt="User avatar"
-          w={56}
-          h={56}
-          mb={27}
-        /> */}
         <Group
           display="flex"
           dir="column"
