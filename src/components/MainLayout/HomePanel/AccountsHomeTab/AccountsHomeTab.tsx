@@ -3,6 +3,7 @@ import { transactions } from '@/app/_mock/transactions';
 
 import { Box, Button, Group, ScrollArea, Text } from '@mantine/core';
 import styles from './AccountsHomeTab.module.css';
+import sharedStyles from '../HomePanel.module.css';
 import {
   IconReplace,
   IconPlus,
@@ -40,7 +41,9 @@ export const AccountsHomeTab = () => {
   const selectedAccount = accounts.find((a) => a.currency === selectedCurrency);
 
   return (
-    <Box className={styles.mainContainer}>
+    <Box
+      className={`${sharedStyles.tabsPanelContainer} ${styles.mainContainer}`}
+    >
       <Box>
         <Group
           className={styles.balanceContainer}
@@ -59,7 +62,7 @@ export const AccountsHomeTab = () => {
           </Text>
           <Button
             leftSection={<IconReplace size={14} />}
-            className={styles.changeAccButton}
+            className={sharedStyles.stringButton}
             size="md"
             onClick={() => setChangeAccOpened(true)}
           >
@@ -78,7 +81,7 @@ export const AccountsHomeTab = () => {
         </Text>
         <Group className={styles.actionButtonsGroup}>
           <Button
-            className={styles.actionButton}
+            className={sharedStyles.actionButton}
             variant="light"
             size="xs"
             leftSection={<IconPlus size={14} />}
@@ -87,7 +90,7 @@ export const AccountsHomeTab = () => {
             Deposit
           </Button>
           <Button
-            className={styles.actionButton}
+            className={sharedStyles.actionButton}
             variant="light"
             size="xs"
             leftSection={<IconTransferOut size={14} />}
@@ -96,7 +99,7 @@ export const AccountsHomeTab = () => {
             Withdraw
           </Button>
           <Button
-            className={styles.actionButton}
+            className={sharedStyles.actionButton}
             variant="light"
             size="xs"
             leftSection={<IconArrowsExchange size={14} />}
@@ -104,7 +107,7 @@ export const AccountsHomeTab = () => {
             Exchange
           </Button>
           <Button
-            className={styles.actionButton}
+            className={sharedStyles.actionButton}
             variant="light"
             size="xs"
             leftSection={<IconSend size={14} />}

@@ -1,10 +1,10 @@
 import ExchangeRates from '@/components/ExchangeRates';
-import { HomePage } from '@/components/HomePage/HomePage';
+import MainLayout from '@/components/MainLayout/MainLayout';
 
 export default function Home() {
   return (
     <main>
-      <HomePage />
+      <MainLayout />
       {/* <ExchangeRates /> */}
     </main>
   );

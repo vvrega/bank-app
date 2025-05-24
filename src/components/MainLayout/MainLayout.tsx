@@ -1,5 +1,5 @@
 'use client';
-import styles from './Navbar.module.css';
+import styles from './MainLayout.module.css';
 import { Group, Tabs, Text, Box } from '@mantine/core';
 import {
   IconHome,
