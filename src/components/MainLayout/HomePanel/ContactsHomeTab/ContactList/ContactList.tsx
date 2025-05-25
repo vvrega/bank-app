@@ -7,6 +7,7 @@ import {
   Stack,
   CopyButton,
   ScrollArea,
+  Tooltip,
 } from '@mantine/core';
 import { IconCopy, IconCheck } from '@tabler/icons-react';
 
@@ -48,19 +49,25 @@ export function ContactList({ contacts }: ContactListProps) {
                     </Text>
                     <CopyButton value={contact.iban}>
                       {({ copied, copy }) => (
-                        <Button
-                          variant="subtle"
-                          size="xs"
-                          color={copied ? 'teal' : 'blue'}
-                          onClick={copy}
-                          px={6}
+                        <Tooltip
+                          label={copied ? 'Copied!' : 'Copy'}
+                          withArrow
+                          position="right"
                         >
-                          {copied ? (
-                            <IconCheck size={16} />
-                          ) : (
-                            <IconCopy size={16} />
-                          )}
-                        </Button>
+                          <Button
+                            variant="subtle"
+                            size="xs"
+                            color={copied ? 'teal' : 'blue'}
+                            onClick={copy}
+                            px={6}
+                          >
+                            {copied ? (
+                              <IconCheck size={16} />
+                            ) : (
+                              <IconCopy size={16} />
+                            )}
+                          </Button>
+                        </Tooltip>
                       )}
                     </CopyButton>
                   </Group>
