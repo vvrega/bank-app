@@ -8,6 +8,7 @@ import {
   IconLogout,
 } from '@tabler/icons-react';
 import { HomePanel } from './HomePanel/HomePanel';
+import { SettingsPanel } from './SettingsPanel/SettingsPanel';
 
 const Navbar = () => {
   return (
@@ -77,7 +78,7 @@ const Navbar = () => {
         </Tabs.Panel>
 
         <Tabs.Panel value="settings" className={styles.tabsPanel}>
-          Settings tab content
+          <SettingsPanel />
         </Tabs.Panel>
       </Tabs>
     </Box>

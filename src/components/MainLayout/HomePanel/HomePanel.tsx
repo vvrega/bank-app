@@ -28,11 +28,11 @@ export const HomePanel = () => {
           </Tabs.Tab>
         </Tabs.List>
 
-        <Tabs.Panel value="accounts" className={styles.homeTabPanel}>
+        <Tabs.Panel value="accounts">
           <AccountsHomeTab />
         </Tabs.Panel>
 
-        <Tabs.Panel value="contacts" className={styles.homeTabPanel}>
+        <Tabs.Panel value="contacts">
           <ContactsHomeTab />
         </Tabs.Panel>
       </Tabs>
