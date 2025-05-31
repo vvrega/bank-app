@@ -100,4 +100,29 @@ app.get('/api/me', async (req, res) => {
   res.json({ user });
 });
 
+app.post('/api/change-password', async (req, res) => {
+  if (!req.session.userId)
+    return res.status(401).json({ error: 'Not authenticated' });
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword)
+    return res.status(400).json({ error: 'Missing fields' });
+
+  const user = await prisma.user.findUnique({
+    where: { id: req.session.userId },
+  });
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  const valid = await bcrypt.compare(currentPassword, user.password);
+  if (!valid)
+    return res.status(401).json({ error: 'Current password is incorrect' });
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { password: hashedPassword },
+  });
+
+  res.json({ success: true });
+});
+
 app.listen(4000, () => console.log('Backend running on http://localhost:4000'));

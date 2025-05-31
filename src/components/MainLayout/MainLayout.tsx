@@ -1,4 +1,5 @@
 'use client';
+import React, { useEffect, useState } from 'react';
 import styles from './MainLayout.module.css';
 import { Group, Tabs, Text, Box } from '@mantine/core';
 import {
@@ -13,6 +14,22 @@ import { useRouter } from 'next/navigation';
 
 const MainLayout = () => {
   const router = useRouter();
+  const [user, setUser] = useState<{
+    firstname: string;
+    lastname: string;
+  } | null>(null);
+
+  useEffect(() => {
+    fetch('http://localhost:4000/api/me', { credentials: 'include' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && data.user)
+          setUser({
+            firstname: data.user.firstName,
+            lastname: data.user.lastName,
+          });
+      });
+  }, []);
 
   const handleLogout = async () => {
     await fetch('http://localhost:4000/api/logout', {
@@ -35,10 +52,10 @@ const MainLayout = () => {
           mb={27}
         >
           <Text size="16px" fw={700} w={200}>
-            Hello,{' '}
+            Hello,
           </Text>
           <Text size="16px" fw={700} w={200}>
-            Firstname Lastname!
+            {user ? `${user.firstname} ${user.lastname}!` : 'Loading...'}
           </Text>
         </Group>
       </Group>

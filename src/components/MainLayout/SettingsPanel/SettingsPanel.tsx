@@ -9,27 +9,69 @@ import {
   Tooltip,
 } from '@mantine/core';
 import { IconCheck, IconCopy } from '@tabler/icons-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import sharedStyles from '../HomePanel/HomePanel.module.css';
+
+function isValidPassword(password: string) {
+  return /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/.test(
+    password
+  );
+}
 
 export const SettingsPanel = () => {
   const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [passwordChanged, setPasswordChanged] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [iban, setIban] = useState('');
 
-  const handleChangePassword = () => {
+  useEffect(() => {
+    fetch('http://localhost:4000/api/me', { credentials: 'include' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && data.user && data.user.iban) setIban(data.user.iban);
+      });
+  }, []);
+
+  const handleChangePassword = async () => {
+    setPasswordError(null);
     if (!password || !newPassword || !confirmNewPassword) return;
-    if (newPassword !== confirmNewPassword) return;
+    if (!isValidPassword(newPassword)) {
+      setPasswordError(
+        'Password must be at least 8 characters, contain a capital letter and a symbol'
+      );
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setPasswordError("Passwords don't match");
+      return;
+    }
 
-    setPasswordChanged(true);
-    setTimeout(() => setPasswordChanged(false), 2000);
-    setPassword('');
-    setNewPassword('');
-    setConfirmNewPassword('');
+    try {
+      const res = await fetch('http://localhost:4000/api/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          currentPassword: password,
+          newPassword,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setPasswordChanged(true);
+        setTimeout(() => setPasswordChanged(false), 2000);
+        setPassword('');
+        setNewPassword('');
+        setConfirmNewPassword('');
+      } else {
+        setPasswordError(data.error || 'Password change failed');
+      }
+    } catch {
+      setPasswordError('Password change failed');
+    }
   };
-
-  const iban = 'PL61109010140000071219812874';
 
   return (
     <>
@@ -77,6 +119,11 @@ export const SettingsPanel = () => {
           onChange={(e) => setNewPassword(e.currentTarget.value)}
           mb="sm"
           required
+          error={
+            newPassword && !isValidPassword(newPassword)
+              ? 'Password must be at least 8 characters, contain a capital letter and a symbol'
+              : undefined
+          }
         />
         <PasswordInput
           label="Confirm new password"
@@ -85,11 +132,12 @@ export const SettingsPanel = () => {
           mb="md"
           required
           error={
-            newPassword &&
+            passwordError ||
+            (newPassword &&
             confirmNewPassword &&
             newPassword !== confirmNewPassword
               ? "Passwords don't match"
-              : undefined
+              : undefined)
           }
         />
         <Group justify="center">
@@ -100,7 +148,8 @@ export const SettingsPanel = () => {
               !password ||
               !newPassword ||
               !confirmNewPassword ||
-              newPassword !== confirmNewPassword
+              newPassword !== confirmNewPassword ||
+              !isValidPassword(newPassword)
             }
           >
             Change password
