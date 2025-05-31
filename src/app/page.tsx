@@ -1,11 +1,19 @@
-import ExchangeRates from '@/components/ExchangeRates';
-import MainLayout from '@/components/MainLayout/MainLayout';
+'use client';
+
+import { useState } from 'react';
+import { Login } from '@/components/Login/Login';
+import { Register } from '@/components/Register/Register';
 
 export default function Home() {
+  const [showRegister, setShowRegister] = useState(false);
+
   return (
     <main>
-      <MainLayout />
-      {/* <ExchangeRates /> */}
+      {showRegister ? (
+        <Register onSwitch={() => setShowRegister(false)} />
+      ) : (
+        <Login onSwitch={() => setShowRegister(true)} />
+      )}
     </main>
   );
 }

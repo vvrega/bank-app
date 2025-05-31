@@ -1,4 +1,5 @@
 'use client';
+import React, { useEffect, useState } from 'react';
 import styles from './MainLayout.module.css';
 import { Group, Tabs, Text, Box } from '@mantine/core';
 import {
@@ -8,8 +9,36 @@ import {
   IconLogout,
 } from '@tabler/icons-react';
 import { HomePanel } from './HomePanel/HomePanel';
+import { SettingsPanel } from './SettingsPanel/SettingsPanel';
+import { useRouter } from 'next/navigation';
 
-const Navbar = () => {
+const MainLayout = () => {
+  const router = useRouter();
+  const [user, setUser] = useState<{
+    firstname: string;
+    lastname: string;
+  } | null>(null);
+
+  useEffect(() => {
+    fetch('http://localhost:4000/api/me', { credentials: 'include' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && data.user)
+          setUser({
+            firstname: data.user.firstName,
+            lastname: data.user.lastName,
+          });
+      });
+  }, []);
+
+  const handleLogout = async () => {
+    await fetch('http://localhost:4000/api/logout', {
+      method: 'POST',
+      credentials: 'include',
+    });
+    router.push('/');
+  };
+
   return (
     <Box className={styles.mainContainer}>
       <Group w={200}>
@@ -23,10 +52,10 @@ const Navbar = () => {
           mb={27}
         >
           <Text size="16px" fw={700} w={200}>
-            Hello,{' '}
+            Hello,
           </Text>
           <Text size="16px" fw={700} w={200}>
-            Firstname Lastname!
+            {user ? `${user.firstname} ${user.lastname}!` : 'Loading...'}
           </Text>
         </Group>
       </Group>
@@ -63,6 +92,7 @@ const Navbar = () => {
             value="logout"
             className={styles.tabElement}
             leftSection={<IconLogout size={20} />}
+            onClick={handleLogout}
           >
             Log out
           </Tabs.Tab>
@@ -77,11 +107,11 @@ const Navbar = () => {
         </Tabs.Panel>
 
         <Tabs.Panel value="settings" className={styles.tabsPanel}>
-          Settings tab content
+          <SettingsPanel />
         </Tabs.Panel>
       </Tabs>
     </Box>
   );
 };
 
-export default Navbar;
+export default MainLayout;
