@@ -30,7 +30,7 @@ export function Login({ onSwitch }: LoginProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ login, password }),
-        credentials: 'include', // ważne dla sesji!
+        credentials: 'include',
       });
       const data = await res.json();
       if (res.ok) {
