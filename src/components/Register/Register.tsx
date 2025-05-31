@@ -10,13 +10,6 @@ import {
 
 interface RegisterProps {
   onSwitch: () => void;
-  onRegister?: (
-    login: string,
-    email: string,
-    password: string,
-    firstName: string,
-    lastName: string
-  ) => void;
 }
 
 function isValidEmail(email: string) {
@@ -30,13 +23,16 @@ function isValidPassword(password: string) {
   );
 }
 
-export function Register({ onSwitch, onRegister }: RegisterProps) {
+export function Register({ onSwitch }: RegisterProps) {
   const [login, setLogin] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const loginError =
     login && login.length < 6
@@ -74,6 +70,38 @@ export function Register({ onSwitch, onRegister }: RegisterProps) {
     confirm &&
     firstName &&
     lastName;
+
+  const handleRegister = async () => {
+    setErrorMsg(null);
+    setSuccessMsg(null);
+    if (!isFormValid) return;
+    setLoading(true);
+    try {
+      const res = await fetch('http://localhost:4000/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ login, email, password, firstName, lastName }),
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSuccessMsg('Registration successful! You can now log in.');
+        setLogin('');
+        setFirstName('');
+        setLastName('');
+        setEmail('');
+        setPassword('');
+        setConfirm('');
+        setTimeout(() => onSwitch(), 1500);
+      } else {
+        setErrorMsg(data.error || 'Registration failed');
+      }
+    } catch (e) {
+      setErrorMsg('Registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Box
@@ -151,13 +179,22 @@ export function Register({ onSwitch, onRegister }: RegisterProps) {
           required
           error={confirmError}
         />
+        {errorMsg && (
+          <Text c="red" size="sm" mb="xs" ta="center">
+            {errorMsg}
+          </Text>
+        )}
+        {successMsg && (
+          <Text c="green" size="sm" mb="xs" ta="center">
+            {successMsg}
+          </Text>
+        )}
         <Group justify="space-between" mb="sm">
           <Button
             fullWidth
-            onClick={() =>
-              onRegister?.(login, email, password, firstName, lastName)
-            }
-            disabled={!isFormValid}
+            onClick={handleRegister}
+            disabled={!isFormValid || loading}
+            loading={loading}
           >
             Register
           </Button>

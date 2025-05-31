@@ -1142,7 +1142,7 @@ export namespace Prisma {
     lastName: string | null
     login: string | null
     email: string | null
-    passwordHash: string | null
+    password: string | null
     iban: string | null
   }
 
@@ -1152,7 +1152,7 @@ export namespace Prisma {
     lastName: string | null
     login: string | null
     email: string | null
-    passwordHash: string | null
+    password: string | null
     iban: string | null
   }
 
@@ -1162,7 +1162,7 @@ export namespace Prisma {
     lastName: number
     login: number
     email: number
-    passwordHash: number
+    password: number
     iban: number
     _all: number
   }
@@ -1182,7 +1182,7 @@ export namespace Prisma {
     lastName?: true
     login?: true
     email?: true
-    passwordHash?: true
+    password?: true
     iban?: true
   }
 
@@ -1192,7 +1192,7 @@ export namespace Prisma {
     lastName?: true
     login?: true
     email?: true
-    passwordHash?: true
+    password?: true
     iban?: true
   }
 
@@ -1202,7 +1202,7 @@ export namespace Prisma {
     lastName?: true
     login?: true
     email?: true
-    passwordHash?: true
+    password?: true
     iban?: true
     _all?: true
   }
@@ -1299,7 +1299,7 @@ export namespace Prisma {
     lastName: string
     login: string
     email: string
-    passwordHash: string
+    password: string
     iban: string
     _count: UserCountAggregateOutputType | null
     _avg: UserAvgAggregateOutputType | null
@@ -1328,7 +1328,7 @@ export namespace Prisma {
     lastName?: boolean
     login?: boolean
     email?: boolean
-    passwordHash?: boolean
+    password?: boolean
     iban?: boolean
     accounts?: boolean | User$accountsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -1342,11 +1342,11 @@ export namespace Prisma {
     lastName?: boolean
     login?: boolean
     email?: boolean
-    passwordHash?: boolean
+    password?: boolean
     iban?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "firstName" | "lastName" | "login" | "email" | "passwordHash" | "iban", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "firstName" | "lastName" | "login" | "email" | "password" | "iban", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     accounts?: boolean | User$accountsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -1363,7 +1363,7 @@ export namespace Prisma {
       lastName: string
       login: string
       email: string
-      passwordHash: string
+      password: string
       iban: string
     }, ExtArgs["result"]["user"]>
     composites: {}
@@ -1740,7 +1740,7 @@ export namespace Prisma {
     readonly lastName: FieldRef<"User", 'String'>
     readonly login: FieldRef<"User", 'String'>
     readonly email: FieldRef<"User", 'String'>
-    readonly passwordHash: FieldRef<"User", 'String'>
+    readonly password: FieldRef<"User", 'String'>
     readonly iban: FieldRef<"User", 'String'>
   }
     
@@ -4204,7 +4204,7 @@ export namespace Prisma {
     lastName: 'lastName',
     login: 'login',
     email: 'email',
-    passwordHash: 'passwordHash',
+    password: 'password',
     iban: 'iban'
   };
 
@@ -4247,7 +4247,7 @@ export namespace Prisma {
     lastName: 'lastName',
     login: 'login',
     email: 'email',
-    passwordHash: 'passwordHash',
+    password: 'password',
     iban: 'iban'
   };
 
@@ -4328,7 +4328,7 @@ export namespace Prisma {
     lastName?: StringFilter<"User"> | string
     login?: StringFilter<"User"> | string
     email?: StringFilter<"User"> | string
-    passwordHash?: StringFilter<"User"> | string
+    password?: StringFilter<"User"> | string
     iban?: StringFilter<"User"> | string
     accounts?: AccountListRelationFilter
   }
@@ -4339,7 +4339,7 @@ export namespace Prisma {
     lastName?: SortOrder
     login?: SortOrder
     email?: SortOrder
-    passwordHash?: SortOrder
+    password?: SortOrder
     iban?: SortOrder
     accounts?: AccountOrderByRelationAggregateInput
     _relevance?: UserOrderByRelevanceInput
@@ -4355,7 +4355,7 @@ export namespace Prisma {
     NOT?: UserWhereInput | UserWhereInput[]
     firstName?: StringFilter<"User"> | string
     lastName?: StringFilter<"User"> | string
-    passwordHash?: StringFilter<"User"> | string
+    password?: StringFilter<"User"> | string
     accounts?: AccountListRelationFilter
   }, "id" | "login" | "email" | "iban">
 
@@ -4365,7 +4365,7 @@ export namespace Prisma {
     lastName?: SortOrder
     login?: SortOrder
     email?: SortOrder
-    passwordHash?: SortOrder
+    password?: SortOrder
     iban?: SortOrder
     _count?: UserCountOrderByAggregateInput
     _avg?: UserAvgOrderByAggregateInput
@@ -4383,7 +4383,7 @@ export namespace Prisma {
     lastName?: StringWithAggregatesFilter<"User"> | string
     login?: StringWithAggregatesFilter<"User"> | string
     email?: StringWithAggregatesFilter<"User"> | string
-    passwordHash?: StringWithAggregatesFilter<"User"> | string
+    password?: StringWithAggregatesFilter<"User"> | string
     iban?: StringWithAggregatesFilter<"User"> | string
   }
 
@@ -4521,7 +4521,7 @@ export namespace Prisma {
     lastName: string
     login: string
     email: string
-    passwordHash: string
+    password: string
     iban: string
     accounts?: AccountCreateNestedManyWithoutUserInput
   }
@@ -4532,7 +4532,7 @@ export namespace Prisma {
     lastName: string
     login: string
     email: string
-    passwordHash: string
+    password: string
     iban: string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
   }
@@ -4542,7 +4542,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     login?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    passwordHash?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
     iban?: StringFieldUpdateOperationsInput | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
   }
@@ -4553,7 +4553,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     login?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    passwordHash?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
     iban?: StringFieldUpdateOperationsInput | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
   }
@@ -4564,7 +4564,7 @@ export namespace Prisma {
     lastName: string
     login: string
     email: string
-    passwordHash: string
+    password: string
     iban: string
   }
 
@@ -4573,7 +4573,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     login?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    passwordHash?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
     iban?: StringFieldUpdateOperationsInput | string
   }
 
@@ -4583,7 +4583,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     login?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    passwordHash?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
     iban?: StringFieldUpdateOperationsInput | string
   }
 
@@ -4753,7 +4753,7 @@ export namespace Prisma {
     lastName?: SortOrder
     login?: SortOrder
     email?: SortOrder
-    passwordHash?: SortOrder
+    password?: SortOrder
     iban?: SortOrder
   }
 
@@ -4767,7 +4767,7 @@ export namespace Prisma {
     lastName?: SortOrder
     login?: SortOrder
     email?: SortOrder
-    passwordHash?: SortOrder
+    password?: SortOrder
     iban?: SortOrder
   }
 
@@ -4777,7 +4777,7 @@ export namespace Prisma {
     lastName?: SortOrder
     login?: SortOrder
     email?: SortOrder
-    passwordHash?: SortOrder
+    password?: SortOrder
     iban?: SortOrder
   }
 
@@ -5535,7 +5535,7 @@ export namespace Prisma {
     lastName: string
     login: string
     email: string
-    passwordHash: string
+    password: string
     iban: string
   }
 
@@ -5545,7 +5545,7 @@ export namespace Prisma {
     lastName: string
     login: string
     email: string
-    passwordHash: string
+    password: string
     iban: string
   }
 
@@ -5624,7 +5624,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     login?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    passwordHash?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
     iban?: StringFieldUpdateOperationsInput | string
   }
 
@@ -5634,7 +5634,7 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     login?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
-    passwordHash?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
     iban?: StringFieldUpdateOperationsInput | string
   }
 

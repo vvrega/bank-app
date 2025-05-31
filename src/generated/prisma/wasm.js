@@ -126,7 +126,7 @@ exports.Prisma.UserScalarFieldEnum = {
   lastName: 'lastName',
   login: 'login',
   email: 'email',
-  passwordHash: 'passwordHash',
+  password: 'password',
   iban: 'iban'
 };
 
@@ -157,7 +157,7 @@ exports.Prisma.UserOrderByRelevanceFieldEnum = {
   lastName: 'lastName',
   login: 'login',
   email: 'email',
-  passwordHash: 'passwordHash',
+  password: 'password',
   iban: 'iban'
 };
 

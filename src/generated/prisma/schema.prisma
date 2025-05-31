@@ -9,14 +9,14 @@ datasource db {
 }
 
 model User {
-  id           Int       @id @default(autoincrement())
-  firstName    String
-  lastName     String
-  login        String    @unique
-  email        String    @unique
-  passwordHash String
-  iban         String    @unique
-  accounts     Account[]
+  id        Int       @id @default(autoincrement())
+  firstName String
+  lastName  String
+  login     String    @unique
+  email     String    @unique
+  password  String
+  iban      String    @unique
+  accounts  Account[]
 }
 
 model Account {
