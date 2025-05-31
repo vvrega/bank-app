@@ -10,7 +10,13 @@ import {
 
 interface RegisterProps {
   onSwitch: () => void;
-  onRegister?: (login: string, email: string, password: string) => void;
+  onRegister?: (
+    login: string,
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string
+  ) => void;
 }
 
 function isValidEmail(email: string) {
@@ -26,6 +32,8 @@ function isValidPassword(password: string) {
 
 export function Register({ onSwitch, onRegister }: RegisterProps) {
   const [login, setLogin] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -44,16 +52,28 @@ export function Register({ onSwitch, onRegister }: RegisterProps) {
     password && confirm && password !== confirm
       ? "Passwords don't match"
       : undefined;
+  const firstNameError =
+    firstName && firstName.length < 2
+      ? 'First name must be at least 2 characters'
+      : undefined;
+  const lastNameError =
+    lastName && lastName.length < 2
+      ? 'Last name must be at least 2 characters'
+      : undefined;
 
   const isFormValid =
     !loginError &&
     !emailError &&
     !passwordError &&
     !confirmError &&
+    !firstNameError &&
+    !lastNameError &&
     login &&
     email &&
     password &&
-    confirm;
+    confirm &&
+    firstName &&
+    lastName;
 
   return (
     <Box
@@ -87,6 +107,24 @@ export function Register({ onSwitch, onRegister }: RegisterProps) {
           error={loginError}
         />
         <TextInput
+          label="First Name"
+          placeholder="Enter Name"
+          value={firstName}
+          onChange={(e) => setFirstName(e.currentTarget.value)}
+          mb="sm"
+          required
+          error={firstNameError}
+        />
+        <TextInput
+          label="Last Name"
+          placeholder="Enter Surname"
+          value={lastName}
+          onChange={(e) => setLastName(e.currentTarget.value)}
+          mb="sm"
+          required
+          error={lastNameError}
+        />
+        <TextInput
           label="Email"
           placeholder="you@email.com"
           value={email}
@@ -116,7 +154,9 @@ export function Register({ onSwitch, onRegister }: RegisterProps) {
         <Group justify="space-between" mb="sm">
           <Button
             fullWidth
-            onClick={() => onRegister?.(login, email, password)}
+            onClick={() =>
+              onRegister?.(login, email, password, firstName, lastName)
+            }
             disabled={!isFormValid}
           >
             Register
