@@ -84,6 +84,13 @@ app.post('/api/login', async (req, res) => {
   res.json({ success: true, userId: user.id });
 });
 
+app.post('/api/logout', (req, res) => {
+  req.session.destroy(() => {
+    res.clearCookie('connect.sid');
+    res.json({ success: true });
+  });
+});
+
 app.get('/api/me', async (req, res) => {
   if (!req.session.userId)
     return res.status(401).json({ error: 'Not authenticated' });

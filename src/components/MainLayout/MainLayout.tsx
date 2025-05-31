@@ -9,8 +9,19 @@ import {
 } from '@tabler/icons-react';
 import { HomePanel } from './HomePanel/HomePanel';
 import { SettingsPanel } from './SettingsPanel/SettingsPanel';
+import { useRouter } from 'next/navigation';
 
-const Navbar = () => {
+const MainLayout = () => {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await fetch('http://localhost:4000/api/logout', {
+      method: 'POST',
+      credentials: 'include',
+    });
+    router.push('/');
+  };
+
   return (
     <Box className={styles.mainContainer}>
       <Group w={200}>
@@ -64,6 +75,7 @@ const Navbar = () => {
             value="logout"
             className={styles.tabElement}
             leftSection={<IconLogout size={20} />}
+            onClick={handleLogout}
           >
             Log out
           </Tabs.Tab>
@@ -85,4 +97,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default MainLayout;
