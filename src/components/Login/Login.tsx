@@ -9,15 +9,41 @@ import {
   Text,
   Group,
 } from '@mantine/core';
+import { useRouter } from 'next/navigation';
 
 interface LoginProps {
   onSwitch: () => void;
-  onLogin?: (login: string, password: string) => void;
 }
 
-export function Login({ onSwitch, onLogin }: LoginProps) {
+export function Login({ onSwitch }: LoginProps) {
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleLogin = async () => {
+    setErrorMsg(null);
+    setLoading(true);
+    try {
+      const res = await fetch('http://localhost:4000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ login, password }),
+        credentials: 'include', // ważne dla sesji!
+      });
+      const data = await res.json();
+      if (res.ok) {
+        router.push('/dashboard');
+      } else {
+        setErrorMsg(data.error || 'Login failed');
+      }
+    } catch (e) {
+      setErrorMsg('Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Box
@@ -57,11 +83,17 @@ export function Login({ onSwitch, onLogin }: LoginProps) {
           mb="md"
           required
         />
+        {errorMsg && (
+          <Text c="red" size="sm" mb="xs" ta="center">
+            {errorMsg}
+          </Text>
+        )}
         <Group justify="space-between" mb="sm">
           <Button
             fullWidth
-            onClick={() => onLogin?.(login, password)}
-            disabled={!login || !password}
+            onClick={handleLogin}
+            disabled={!login || !password || loading}
+            loading={loading}
           >
             Login
           </Button>
