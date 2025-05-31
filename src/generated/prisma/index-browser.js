@@ -120,9 +120,66 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
+exports.Prisma.UserScalarFieldEnum = {
+  id: 'id',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  login: 'login',
+  email: 'email',
+  passwordHash: 'passwordHash',
+  iban: 'iban'
+};
+
+exports.Prisma.AccountScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  currency: 'currency',
+  balance: 'balance'
+};
+
+exports.Prisma.TransactionScalarFieldEnum = {
+  id: 'id',
+  fromAccountId: 'fromAccountId',
+  toAccountId: 'toAccountId',
+  amount: 'amount',
+  currency: 'currency',
+  createdAt: 'createdAt',
+  description: 'description'
+};
+
+exports.Prisma.SortOrder = {
+  asc: 'asc',
+  desc: 'desc'
+};
+
+exports.Prisma.UserOrderByRelevanceFieldEnum = {
+  firstName: 'firstName',
+  lastName: 'lastName',
+  login: 'login',
+  email: 'email',
+  passwordHash: 'passwordHash',
+  iban: 'iban'
+};
+
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
+exports.Prisma.TransactionOrderByRelevanceFieldEnum = {
+  description: 'description'
+};
+exports.Currency = exports.$Enums.Currency = {
+  PLN: 'PLN',
+  EUR: 'EUR',
+  USD: 'USD',
+  GBP: 'GBP'
+};
 
 exports.Prisma.ModelName = {
-
+  User: 'User',
+  Account: 'Account',
+  Transaction: 'Transaction'
 };
 
 /**
