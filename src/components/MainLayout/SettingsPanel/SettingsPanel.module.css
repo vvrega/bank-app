@@ -1,0 +1,11 @@
+.settingsContainer {
+  max-width: 50vw;
+  padding: 40px;
+}
+
+@media (max-width: 768px) {
+  .settingsContainer {
+    padding: 20px;
+    max-width: 80vw;
+  }
+}

@@ -16,3 +16,9 @@
   gap: 8px;
   margin: 16px 24px 0 24px;
 }
+
+@media (max-width: 525px) {
+  .currencyDescription {
+    display: none;
+  }
+}

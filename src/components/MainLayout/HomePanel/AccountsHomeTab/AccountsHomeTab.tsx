@@ -120,7 +120,7 @@ export const AccountsHomeTab = () => {
         <Text ml="lg" mt="xl" size="14px">
           Transactions
         </Text>
-        <ScrollArea h="30vh" mx="lg" mt="md" mb="lg">
+        <ScrollArea h="30vh" mb="sm">
           <Box m="lg">
             {transactions.map((transaction) => (
               <TransactionHistoryItem

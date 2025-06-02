@@ -27,7 +27,7 @@ interface ContactListProps {
 export function ContactList({ contacts }: ContactListProps) {
   return (
     <Box>
-      <ScrollArea h="45vh">
+      <ScrollArea h="45vh" mb="sm">
         <Stack gap="sm" m="lg">
           {contacts.map((contact) => (
             <Paper

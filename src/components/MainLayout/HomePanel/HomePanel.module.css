@@ -15,6 +15,12 @@
   margin-top: 24px;
 }
 
+.headerTitle {
+  font-weight: 700;
+  font-size: 40px;
+  margin-bottom: 32px;
+}
+
 .actionButton {
   border: 1px solid #4c6ef5;
   font-weight: 400;
@@ -49,4 +55,32 @@
 .stringButton:active {
   transform: none;
   color: #002ee8;
+}
+
+@media (max-width: 1100px) {
+  .tabsPanelContainer {
+    width: 62vw;
+  }
+}
+
+@media (max-width: 768px) {
+  .tabsPanelContainer {
+    width: 80vw;
+  }
+
+  .stringButton {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 550px) {
+  .headerTitle {
+    font-size: 30px;
+  }
+}
+
+@media (max-width: 550px) and (max-height: 840px) {
+  .tabsPanelContainer {
+    height: 68vh;
+  }
 }

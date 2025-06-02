@@ -24,7 +24,7 @@ export const ContactsHomeTab = () => {
           Add new
         </Button>
       </Group>
-      <Box className={styles.contactsContainer}>
+      <Box>
         <ContactList contacts={contacts} />
       </Box>
     </Box>

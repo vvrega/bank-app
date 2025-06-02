@@ -7,9 +7,7 @@ import { ContactsHomeTab } from './ContactsHomeTab/ContactsHomeTab';
 export const HomePanel = () => {
   return (
     <>
-      <Text size="40px" fw={700} mb="xl">
-        Home
-      </Text>
+      <Text className={styles.headerTitle}>Home</Text>
       <Tabs defaultValue="accounts">
         <Tabs.List bd="none" className={styles.homeTabsList}>
           <Tabs.Tab
