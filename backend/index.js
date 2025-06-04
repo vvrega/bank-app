@@ -181,4 +181,15 @@ app.post('/api/contacts', async (req, res) => {
   res.json({ success: true });
 });
 
+// Get user accounts
+app.get('/api/accounts', async (req, res) => {
+  if (!req.session.userId)
+    return res.status(401).json({ error: 'Not authenticated' });
+  const accounts = await prisma.account.findMany({
+    where: { userId: req.session.userId },
+    select: { id: true, currency: true, balance: true },
+  });
+  res.json({ accounts });
+});
+
 app.listen(4000, () => console.log('Backend running on http://localhost:4000'));

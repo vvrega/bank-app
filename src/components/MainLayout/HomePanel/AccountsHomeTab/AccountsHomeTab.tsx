@@ -1,6 +1,5 @@
+import { useEffect, useState } from 'react';
 import { TransactionHistoryItem } from './TransactionHistoryItem/TransactionHistoryItem';
-import { transactions } from '@/app/_mock/transactions';
-
 import { Box, Button, Group, ScrollArea, Text } from '@mantine/core';
 import styles from './AccountsHomeTab.module.css';
 import sharedStyles from '../HomePanel.module.css';
@@ -11,32 +10,65 @@ import {
   IconSend,
   IconArrowsExchange,
 } from '@tabler/icons-react';
-
-import { useState } from 'react';
 import { AccountActionModal } from '@/components/Modals/AccountActionModal';
 import { ChangeAccountModal } from '@/components/Modals/ChangeAccountModal';
 
-type Currency = 'PLN' | 'USD' | 'EUR' | 'GBP';
+export type Currency = 'PLN' | 'USD' | 'EUR' | 'GBP';
 
 interface Account {
+  id: number;
   currency: Currency;
   balance: number;
 }
-
-const initialAccounts: Account[] = [
-  { currency: 'PLN', balance: 1047.53 },
-  { currency: 'USD', balance: 320.12 },
-  { currency: 'EUR', balance: 210.45 },
-  { currency: 'GBP', balance: 99.99 },
-];
 
 export const AccountsHomeTab = () => {
   const [depositOpened, setDepositOpened] = useState(false);
   const [withdrawOpened, setWithdrawOpened] = useState(false);
   const [changeAccOpened, setChangeAccOpened] = useState(false);
 
-  const [accounts] = useState(initialAccounts);
-  const [selectedCurrency, setSelectedCurrency] = useState('PLN');
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency>('PLN');
+  const [transactions, setTransactions] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      const res = await fetch('http://localhost:4000/api/accounts', {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setAccounts(data.accounts);
+        if (data.accounts.length && !accounts.length) {
+          setSelectedCurrency(data.accounts[0].currency);
+        }
+      }
+    };
+    fetchAccounts();
+    // eslint-disable-next-line
+  }, []);
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      const selectedAccount = accounts.find(
+        (a) => a.currency === selectedCurrency
+      );
+      if (selectedAccount) {
+        const res = await fetch(
+          `http://localhost:4000/api/accounts/${selectedAccount.id}/transactions`,
+          { credentials: 'include' }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setTransactions(data.transactions);
+        } else {
+          setTransactions([]);
+        }
+      }
+    };
+    if (accounts.length) {
+      fetchTransactions();
+    }
+  }, [accounts, selectedCurrency]);
 
   const selectedAccount = accounts.find((a) => a.currency === selectedCurrency);
 

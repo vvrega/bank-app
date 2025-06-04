@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   Modal,
   Text,
@@ -9,6 +8,8 @@ import {
   Paper,
 } from '@mantine/core';
 
+import type { Currency } from '@/components/MainLayout/HomePanel/AccountsHomeTab/AccountsHomeTab';
+
 interface Account {
   currency: 'PLN' | 'USD' | 'EUR' | 'GBP';
   balance: number;
@@ -18,8 +19,8 @@ interface ChangeAccountModalProps {
   opened: boolean;
   onClose: () => void;
   accounts: Account[];
-  selectedCurrency: string;
-  onSelect: (currency: string) => void;
+  selectedCurrency: Currency;
+  onSelect: (currency: Currency) => void;
 }
 
 export function ChangeAccountModal({
