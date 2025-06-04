@@ -14,8 +14,9 @@ interface AccountActionModalProps {
   title: string;
   submitLabel: string;
   quickAmounts?: number[];
-  minAmount?: number;
-  minAmountText?: string;
+  currency?: string;
+  balance?: number;
+  onSuccess?: () => void;
 }
 
 export function AccountActionModal({
@@ -24,10 +25,81 @@ export function AccountActionModal({
   title,
   submitLabel,
   quickAmounts = [50, 100, 250, 500],
-  minAmount = 2,
-  minAmountText = 'Minimum amount is 2 PLN',
+  currency = 'PLN',
+  balance = 0,
+  onSuccess,
 }: AccountActionModalProps) {
   const [amount, setAmount] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const minAmount =
+    currency === 'PLN'
+      ? 2
+      : currency === 'USD' || currency === 'EUR' || currency === 'GBP'
+      ? 0.5
+      : 0.01;
+  const maxAmount = submitLabel === 'Withdraw' ? balance : 100000;
+  const minAmountText =
+    currency === 'PLN'
+      ? 'Minimum amount is 2 PLN'
+      : `Minimum amount is 0.5 ${currency}`;
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(',', '.');
+    value = value.replace(/[^0-9.]/g, '');
+    if (value.includes('.')) {
+      const [int, dec] = value.split('.');
+      value = int + '.' + (dec.length > 2 ? dec.slice(0, 2) : dec);
+    }
+    setAmount(value);
+  };
+
+  const handleSubmit = async () => {
+    setError(null);
+    let value = parseFloat(amount.replace(',', '.'));
+    if (isNaN(value)) {
+      setError('Enter a valid amount');
+      return;
+    }
+    value = Math.round(value * 100) / 100;
+
+    if (!/^\d+(\.\d{1,2})?$/.test(value.toFixed(2))) {
+      setError('Maximum 2 decimal places allowed');
+      return;
+    }
+    if (value < minAmount) {
+      setError(`Minimum amount is ${minAmount} ${currency}`);
+      return;
+    }
+    if (value > maxAmount) {
+      setError(
+        submitLabel === 'Withdraw'
+          ? 'Insufficient funds'
+          : `Maximum deposit is 100000 ${currency}`
+      );
+      return;
+    }
+
+    const endpoint =
+      submitLabel === 'Withdraw'
+        ? '/api/accounts/withdraw'
+        : '/api/accounts/deposit';
+
+    const res = await fetch(`http://localhost:4000${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ amount: value, currency }),
+    });
+    if (res.ok) {
+      setAmount('');
+      onClose();
+      if (onSuccess) onSuccess();
+    } else {
+      const data = await res.json();
+      setError(data.error || 'Operation failed');
+    }
+  };
 
   return (
     <Modal
@@ -48,11 +120,12 @@ export function AccountActionModal({
       </Group>
       <TextInput
         label="Amount"
-        placeholder="Enter amount"
+        placeholder={`Enter amount in ${currency}`}
         value={amount}
-        onChange={(e) => setAmount(e.currentTarget.value)}
-        type="number"
+        onChange={handleAmountChange}
+        type="text"
         min={minAmount}
+        max={maxAmount}
         mb={4}
       />
       <Text size="xs" c="dimmed" mb="sm">
@@ -64,13 +137,20 @@ export function AccountActionModal({
             key={val}
             variant="light"
             size="xs"
-            onClick={() => setAmount(val.toString())}
+            onClick={() => setAmount(val.toFixed(2))}
           >
-            {val} PLN
+            {val.toFixed(2)} {currency}
           </Button>
         ))}
       </Group>
-      <Button fullWidth>{submitLabel}</Button>
+      {error && (
+        <Text color="red" size="sm" mb="sm">
+          {error}
+        </Text>
+      )}
+      <Button fullWidth onClick={handleSubmit}>
+        {submitLabel}
+      </Button>
     </Modal>
   );
 }

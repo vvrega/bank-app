@@ -27,8 +27,20 @@ export const AccountsHomeTab = () => {
   const [changeAccOpened, setChangeAccOpened] = useState(false);
 
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [selectedCurrency, setSelectedCurrency] = useState<Currency>('PLN');
+  const [selectedCurrency, setSelectedCurrency] = useState<
+    Currency | undefined
+  >(undefined);
   const [transactions, setTransactions] = useState<any[]>([]);
+
+  useEffect(() => {
+    const storedCurrency = localStorage.getItem('selectedCurrency');
+    if (
+      storedCurrency &&
+      ['PLN', 'USD', 'EUR', 'GBP'].includes(storedCurrency)
+    ) {
+      setSelectedCurrency(storedCurrency as Currency);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -38,14 +50,23 @@ export const AccountsHomeTab = () => {
       if (res.ok) {
         const data = await res.json();
         setAccounts(data.accounts);
-        if (data.accounts.length && !accounts.length) {
-          setSelectedCurrency(data.accounts[0].currency);
-        }
       }
     };
     fetchAccounts();
-    // eslint-disable-next-line
   }, []);
+
+  useEffect(() => {
+    if (!selectedCurrency && accounts.length) {
+      setSelectedCurrency(accounts[0].currency);
+      localStorage.setItem('selectedCurrency', accounts[0].currency);
+    }
+  }, [accounts, selectedCurrency]);
+
+  useEffect(() => {
+    if (selectedCurrency) {
+      localStorage.setItem('selectedCurrency', selectedCurrency);
+    }
+  }, [selectedCurrency]);
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -65,12 +86,19 @@ export const AccountsHomeTab = () => {
         }
       }
     };
-    if (accounts.length) {
+    if (accounts.length && selectedCurrency) {
       fetchTransactions();
     }
   }, [accounts, selectedCurrency]);
 
+  const handleSelectCurrency = (currency: Currency) => {
+    setSelectedCurrency(currency);
+    localStorage.setItem('selectedCurrency', currency);
+  };
+
   const selectedAccount = accounts.find((a) => a.currency === selectedCurrency);
+
+  if (!selectedCurrency) return null;
 
   return (
     <Box
@@ -86,10 +114,9 @@ export const AccountsHomeTab = () => {
         >
           <Text size="40px" fw={700} mt="lg" ml="lg">
             {selectedAccount
-              ? `${selectedAccount.balance.toLocaleString('pl-PL', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })} ${selectedAccount.currency}`
+              ? `${Number(selectedAccount.balance).toFixed(2)} ${
+                  selectedAccount.currency
+                }`
               : ''}
           </Text>
           <Button
@@ -168,19 +195,47 @@ export const AccountsHomeTab = () => {
         onClose={() => setDepositOpened(false)}
         title="Deposit"
         submitLabel="Deposit"
+        currency={selectedAccount?.currency}
+        balance={selectedAccount?.balance}
+        onSuccess={() => {
+          const fetchAccounts = async () => {
+            const res = await fetch('http://localhost:4000/api/accounts', {
+              credentials: 'include',
+            });
+            if (res.ok) {
+              const data = await res.json();
+              setAccounts(data.accounts);
+            }
+          };
+          fetchAccounts();
+        }}
       />
       <AccountActionModal
         opened={withdrawOpened}
         onClose={() => setWithdrawOpened(false)}
         title="Withdraw"
         submitLabel="Withdraw"
+        currency={selectedAccount?.currency}
+        balance={selectedAccount?.balance}
+        onSuccess={() => {
+          const fetchAccounts = async () => {
+            const res = await fetch('http://localhost:4000/api/accounts', {
+              credentials: 'include',
+            });
+            if (res.ok) {
+              const data = await res.json();
+              setAccounts(data.accounts);
+            }
+          };
+          fetchAccounts();
+        }}
       />
       <ChangeAccountModal
         opened={changeAccOpened}
         onClose={() => setChangeAccOpened(false)}
         accounts={accounts}
         selectedCurrency={selectedCurrency}
-        onSelect={setSelectedCurrency}
+        onSelect={handleSelectCurrency}
       />
     </Box>
   );

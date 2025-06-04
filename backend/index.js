@@ -192,4 +192,48 @@ app.get('/api/accounts', async (req, res) => {
   res.json({ accounts });
 });
 
+app.post('/api/accounts/deposit', async (req, res) => {
+  if (!req.session.userId)
+    return res.status(401).json({ error: 'Not authenticated' });
+  const { amount, currency } = req.body;
+  if (!amount || !currency)
+    return res.status(400).json({ error: 'Missing data' });
+  if (amount > 100000)
+    return res.status(400).json({ error: 'Maximum deposit is 100000' });
+
+  const account = await prisma.account.findFirst({
+    where: { userId: req.session.userId, currency },
+  });
+  if (!account) return res.status(404).json({ error: 'Account not found' });
+
+  await prisma.account.update({
+    where: { id: account.id },
+    data: { balance: { increment: amount } },
+  });
+
+  res.json({ success: true });
+});
+
+app.post('/api/accounts/withdraw', async (req, res) => {
+  if (!req.session.userId)
+    return res.status(401).json({ error: 'Not authenticated' });
+  const { amount, currency } = req.body;
+  if (!amount || !currency)
+    return res.status(400).json({ error: 'Missing data' });
+
+  const account = await prisma.account.findFirst({
+    where: { userId: req.session.userId, currency },
+  });
+  if (!account) return res.status(404).json({ error: 'Account not found' });
+  if (amount > account.balance)
+    return res.status(400).json({ error: 'Insufficient funds' });
+
+  await prisma.account.update({
+    where: { id: account.id },
+    data: { balance: { decrement: amount } },
+  });
+
+  res.json({ success: true });
+});
+
 app.listen(4000, () => console.log('Backend running on http://localhost:4000'));
