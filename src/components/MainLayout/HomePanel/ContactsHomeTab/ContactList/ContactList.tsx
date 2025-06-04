@@ -14,10 +14,10 @@ import { IconCopy, IconCheck } from '@tabler/icons-react';
 import sharedStyles from '@/components/MainLayout/HomePanel/HomePanel.module.css';
 
 export interface Contact {
-  id: string;
-  firstName: string;
-  lastName: string;
-  iban: string;
+  id: number;
+  name: string;
+  contactUserIban: string;
+  contactUserId: number;
 }
 
 interface ContactListProps {
@@ -40,14 +40,12 @@ export function ContactList({ contacts }: ContactListProps) {
             >
               <Group justify="space-between" align="center">
                 <Box>
-                  <Text fw={500}>
-                    {contact.firstName} {contact.lastName}
-                  </Text>
+                  <Text fw={500}>{contact.name}</Text>
                   <Group gap="xs" mt={4}>
                     <Text size="xs" c="dimmed" style={{ letterSpacing: 1 }}>
-                      {contact.iban}
+                      {contact.contactUserIban}
                     </Text>
-                    <CopyButton value={contact.iban}>
+                    <CopyButton value={contact.contactUserIban}>
                       {({ copied, copy }) => (
                         <Tooltip
                           label={copied ? 'Copied!' : 'Copy'}

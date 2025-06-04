@@ -125,4 +125,54 @@ app.post('/api/change-password', async (req, res) => {
   res.json({ success: true });
 });
 
+// Get user contacts
+app.get('/api/contacts', async (req, res) => {
+  if (!req.session.userId)
+    return res.status(401).json({ error: 'Not authenticated' });
+  const contacts = await prisma.contact.findMany({
+    where: { ownerId: req.session.userId },
+    include: { contactUser: true },
+  });
+  res.json({
+    contacts: contacts.map((c) => ({
+      id: c.id,
+      name: c.name,
+      contactUserIban: c.contactUserIban,
+      contactUserId: c.contactUserId,
+    })),
+  });
+});
+
+// Add new contact
+app.post('/api/contacts', async (req, res) => {
+  if (!req.session.userId)
+    return res.status(401).json({ error: 'Not authenticated' });
+  const { name, iban } = req.body;
+  if (!name || !iban)
+    return res.status(400).json({ error: 'Name and IBAN are required' });
+
+  const user = await prisma.user.findUnique({ where: { iban } });
+  if (!user) return res.status(404).json({ error: 'No user with this IBAN' });
+
+  // Check if contact already exists
+  const exists = await prisma.contact.findFirst({
+    where: {
+      ownerId: req.session.userId,
+      contactUserId: user.id,
+    },
+  });
+  if (exists) return res.status(409).json({ error: 'Contact already exists' });
+
+  await prisma.contact.create({
+    data: {
+      ownerId: req.session.userId,
+      contactUserId: user.id,
+      contactUserIban: iban,
+      name,
+    },
+  });
+
+  res.json({ success: true });
+});
+
 app.listen(4000, () => console.log('Backend running on http://localhost:4000'));
