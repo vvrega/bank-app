@@ -139,6 +139,12 @@ app.get('/api/contacts', async (req, res) => {
       name: c.name,
       contactUserIban: c.contactUserIban,
       contactUserId: c.contactUserId,
+      contactUser: c.contactUser
+        ? {
+            firstName: c.contactUser.firstName,
+            lastName: c.contactUser.lastName,
+          }
+        : undefined,
     })),
   });
 });

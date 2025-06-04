@@ -18,6 +18,10 @@ export interface Contact {
   name: string;
   contactUserIban: string;
   contactUserId: number;
+  contactUser?: {
+    firstName: string;
+    lastName: string;
+  };
 }
 
 interface ContactListProps {
@@ -41,6 +45,12 @@ export function ContactList({ contacts }: ContactListProps) {
               <Group justify="space-between" align="center">
                 <Box>
                   <Text fw={500}>{contact.name}</Text>
+                  {contact.contactUser && (
+                    <Text size="xs" c="dimmed" style={{ marginBottom: 2 }}>
+                      {contact.contactUser.firstName}{' '}
+                      {contact.contactUser.lastName}
+                    </Text>
+                  )}
                   <Group gap="xs" mt={4}>
                     <Text size="xs" c="dimmed" style={{ letterSpacing: 1 }}>
                       {contact.contactUserIban}
