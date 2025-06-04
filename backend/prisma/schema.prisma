@@ -16,7 +16,10 @@ model User {
   password  String
   iban      String   @unique
   accounts  Account[]
+  ownerContacts   Contact[] @relation("OwnerContacts")
+  contactUsers    Contact[] @relation("ContactUser")
 }
+
 model Account {
   id        Int      @id @default(autoincrement())
   user      User     @relation(fields: [userId], references: [id])
@@ -37,6 +40,16 @@ model Transaction {
   currency      Currency
   createdAt     DateTime  @default(now())
   description   String?
+}
+
+model Contact {
+  id              Int    @id @default(autoincrement())
+  owner           User   @relation("OwnerContacts", fields: [ownerId], references: [id])
+  ownerId         Int
+  contactUser     User   @relation("ContactUser", fields: [contactUserId], references: [id])
+  contactUserId   Int
+  contactUserIban String
+  name            String
 }
 
 enum Currency {
