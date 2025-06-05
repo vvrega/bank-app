@@ -316,6 +316,16 @@ app.post('/api/accounts/transfer', async (req, res) => {
   res.json({ success: true });
 });
 
+const formatDate = (date) => {
+  const d = new Date(date);
+  const day = d.getDate().toString().padStart(2, '0');
+  const month = (d.getMonth() + 1).toString().padStart(2, '0');
+  const year = d.getFullYear();
+  const hours = d.getHours().toString().padStart(2, '0');
+  const minutes = d.getMinutes().toString().padStart(2, '0');
+  return `${day}.${month}.${year} ${hours}:${minutes}`;
+};
+
 app.get('/api/transactions', async (req, res) => {
   if (!req.session.userId)
     return res.status(401).json({ error: 'Not authenticated' });
@@ -345,7 +355,7 @@ app.get('/api/transactions', async (req, res) => {
     type: t.type,
     amount: t.amount,
     currency: t.currency,
-    date: t.createdAt,
+    date: formatDate(t.createdAt),
     description: t.description,
     targetCurrency: t.targetCurrency,
     fromAccountId: t.fromAccountId,
@@ -360,4 +370,5 @@ app.get('/api/transactions', async (req, res) => {
 
   res.json({ transactions: mapped });
 });
+
 app.listen(4000, () => console.log('Backend running on http://localhost:4000'));
