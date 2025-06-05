@@ -20,6 +20,7 @@ interface Account {
   id: number;
   currency: Currency;
   balance: number;
+  userId: number;
 }
 
 export const AccountsHomeTab = () => {
@@ -32,6 +33,7 @@ export const AccountsHomeTab = () => {
   >(undefined);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [transferOpened, setTransferOpened] = useState(false);
+  const [userId, setUserId] = useState<number | null>(null);
 
   useEffect(() => {
     const storedCurrency = localStorage.getItem('selectedCurrency');
@@ -50,6 +52,21 @@ export const AccountsHomeTab = () => {
     if (res.ok) {
       const data = await res.json();
       setAccounts(data.accounts);
+      if (data.accounts.length > 0) {
+        setUserId(data.accounts[0].userId);
+      }
+    }
+  };
+
+  const fetchTransactions = async () => {
+    const res = await fetch('http://localhost:4000/api/transactions', {
+      credentials: 'include',
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setTransactions(data.transactions);
+    } else {
+      setTransactions([]);
     }
   };
 
@@ -71,27 +88,8 @@ export const AccountsHomeTab = () => {
   }, [selectedCurrency]);
 
   useEffect(() => {
-    const fetchTransactions = async () => {
-      const selectedAccount = accounts.find(
-        (a) => a.currency === selectedCurrency
-      );
-      if (selectedAccount) {
-        const res = await fetch(
-          `http://localhost:4000/api/accounts/${selectedAccount.id}/transactions`,
-          { credentials: 'include' }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setTransactions(data.transactions);
-        } else {
-          setTransactions([]);
-        }
-      }
-    };
-    if (accounts.length && selectedCurrency) {
-      fetchTransactions();
-    }
-  }, [accounts, selectedCurrency]);
+    fetchTransactions();
+  }, [accounts.length]);
 
   const handleSelectCurrency = (currency: Currency) => {
     setSelectedCurrency(currency);
@@ -189,12 +187,15 @@ export const AccountsHomeTab = () => {
         </Text>
         <ScrollArea h="30vh" mb="sm">
           <Box m="lg">
-            {transactions.map((transaction) => (
-              <TransactionHistoryItem
-                key={transaction.id}
-                transaction={transaction}
-              />
-            ))}
+            {userId !== null &&
+              transactions.map((transaction) => (
+                <TransactionHistoryItem
+                  key={transaction.id}
+                  transaction={transaction}
+                  accounts={accounts}
+                  currentUserId={userId}
+                />
+              ))}
           </Box>
         </ScrollArea>
       </Box>
@@ -206,16 +207,8 @@ export const AccountsHomeTab = () => {
         currency={selectedAccount?.currency}
         balance={selectedAccount?.balance}
         onSuccess={() => {
-          const fetchAccounts = async () => {
-            const res = await fetch('http://localhost:4000/api/accounts', {
-              credentials: 'include',
-            });
-            if (res.ok) {
-              const data = await res.json();
-              setAccounts(data.accounts);
-            }
-          };
           fetchAccounts();
+          fetchTransactions();
         }}
       />
       <AccountActionModal
@@ -226,16 +219,8 @@ export const AccountsHomeTab = () => {
         currency={selectedAccount?.currency}
         balance={selectedAccount?.balance}
         onSuccess={() => {
-          const fetchAccounts = async () => {
-            const res = await fetch('http://localhost:4000/api/accounts', {
-              credentials: 'include',
-            });
-            if (res.ok) {
-              const data = await res.json();
-              setAccounts(data.accounts);
-            }
-          };
           fetchAccounts();
+          fetchTransactions();
         }}
       />
       <ChangeAccountModal
@@ -249,7 +234,10 @@ export const AccountsHomeTab = () => {
         opened={transferOpened}
         onClose={() => setTransferOpened(false)}
         accounts={accounts}
-        onSuccess={fetchAccounts}
+        onSuccess={() => {
+          fetchAccounts();
+          fetchTransactions();
+        }}
       />
     </Box>
   );

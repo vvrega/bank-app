@@ -6,72 +6,100 @@ import {
   IconArrowsExchange,
 } from '@tabler/icons-react';
 
-type TransactionType = 'deposit' | 'withdraw' | 'exchange' | 'external';
+type TransactionType = 'Deposit' | 'Withdraw' | 'Transfer' | 'Exchange';
 
 interface Transaction {
-  id: string;
+  id: string | number;
   type: TransactionType;
   amount: number;
   currency: string;
   date: string;
   description?: string;
-  targetCurrency?: string; // for internal
-  targetUser?: string; // for external
+  targetCurrency?: string;
+  targetUser?: string;
+  fromAccountId?: number;
+  toAccountId?: number;
+  fromUserName?: string;
+  toUserName?: string;
+}
+
+interface Account {
+  id: number;
+  userId: number;
 }
 
 const typeConfig: Record<
   TransactionType,
   { icon: React.ReactNode; color: string; label: string }
 > = {
-  deposit: {
+  Deposit: {
     icon: <IconPlus size={18} />,
     color: 'green',
     label: 'Deposit',
   },
-  withdraw: {
+  Withdraw: {
     icon: <IconTransferOut size={18} />,
     color: 'red',
     label: 'Withdraw',
   },
-  exchange: {
+  Exchange: {
     icon: <IconArrowsExchange size={18} />,
     color: 'blue',
     label: 'Currency exchange',
   },
-  external: {
+  Transfer: {
     icon: <IconSend size={18} />,
     color: 'orange',
-    label: 'External transfer',
+    label: 'Transfer',
   },
-};
-
-const valueColor: Record<TransactionType, string> = {
-  deposit: '#228B22',
-  exchange: '#212529',
-  withdraw: '#c92a2a',
-  external: '#c92a2a',
 };
 
 export function TransactionHistoryItem({
   transaction,
+  accounts,
+  currentUserId,
 }: {
   transaction: Transaction;
+  accounts: Account[];
+  currentUserId: number;
 }) {
   const config = typeConfig[transaction.type];
+  const fromAccount = accounts.find(
+    (acc) => acc.id === transaction.fromAccountId
+  );
+  const isOutgoing = fromAccount && fromAccount.userId === currentUserId;
+  const sign = isOutgoing ? '-' : '+';
+  const color = isOutgoing ? '#c92a2a' : '#228B22';
+
+  let transferTitle = config ? config.label : transaction.type;
+  if (transaction.type === 'Transfer') {
+    if (isOutgoing && transaction.toUserName) {
+      transferTitle = `Transfer to ${transaction.toUserName}`;
+    } else if (!isOutgoing && transaction.fromUserName) {
+      transferTitle = `Transfer from ${transaction.fromUserName}`;
+    } else {
+      transferTitle = config ? config.label : transaction.type;
+    }
+  }
 
   return (
     <Group align="center" gap="md" mb="xs">
-      <ThemeIcon color={config.color} variant="light" size="lg">
-        {config.icon}
+      <ThemeIcon
+        color={config ? config.color : 'gray'}
+        variant="light"
+        size="lg"
+      >
+        {config ? config.icon : transaction.type?.[0] || '?'}
       </ThemeIcon>
       <Box>
         <Text size="sm" fw={500}>
-          {config.label}
-          {transaction.type === 'exchange' && transaction.targetCurrency
+          {transaction.type === 'Transfer'
+            ? transferTitle
+            : config
+            ? config.label
+            : transaction.type}
+          {transaction.type === 'Exchange' && transaction.targetCurrency
             ? ` to ${transaction.targetCurrency}`
-            : ''}
-          {transaction.type === 'external' && transaction.targetUser
-            ? ` to ${transaction.targetUser}`
             : ''}
         </Text>
         <Text size="xs" c="dimmed">
@@ -83,14 +111,9 @@ export function TransactionHistoryItem({
           </Text>
         )}
       </Box>
-      <Text
-        fw={700}
-        size="sm"
-        ml="auto"
-        style={{ color: valueColor[transaction.type] }}
-      >
-        {transaction.amount > 0 ? '+' : ''}
-        {transaction.amount} {transaction.currency}
+      <Text fw={700} size="sm" ml="auto" style={{ color }}>
+        {sign}
+        {Math.abs(transaction.amount).toFixed(2)} {transaction.currency}
       </Text>
     </Group>
   );

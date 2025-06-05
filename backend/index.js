@@ -212,6 +212,15 @@ app.post('/api/accounts/deposit', async (req, res) => {
     data: { balance: { increment: amount } },
   });
 
+  await prisma.transaction.create({
+    data: {
+      toAccountId: account.id,
+      amount,
+      currency,
+      type: 'Deposit',
+    },
+  });
+
   res.json({ success: true });
 });
 
@@ -233,6 +242,15 @@ app.post('/api/accounts/withdraw', async (req, res) => {
   await prisma.account.update({
     where: { id: account.id },
     data: { balance: { decrement: amount } },
+  });
+
+  await prisma.transaction.create({
+    data: {
+      fromAccountId: account.id,
+      amount,
+      currency,
+      type: 'Withdraw',
+    },
   });
 
   res.json({ success: true });
@@ -290,6 +308,7 @@ app.post('/api/accounts/transfer', async (req, res) => {
         amount,
         currency: fromCurrency,
         description: title,
+        type: 'Transfer',
       },
     }),
   ]);
@@ -297,4 +316,48 @@ app.post('/api/accounts/transfer', async (req, res) => {
   res.json({ success: true });
 });
 
+app.get('/api/transactions', async (req, res) => {
+  if (!req.session.userId)
+    return res.status(401).json({ error: 'Not authenticated' });
+
+  const accounts = await prisma.account.findMany({
+    where: { userId: req.session.userId },
+    select: { id: true },
+  });
+  const accountIds = accounts.map((a) => a.id);
+
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      OR: [
+        { fromAccountId: { in: accountIds } },
+        { toAccountId: { in: accountIds } },
+      ],
+    },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      fromAccount: { include: { user: true } },
+      toAccount: { include: { user: true } },
+    },
+  });
+
+  const mapped = transactions.map((t) => ({
+    id: t.id,
+    type: t.type,
+    amount: t.amount,
+    currency: t.currency,
+    date: t.createdAt,
+    description: t.description,
+    targetCurrency: t.targetCurrency,
+    fromAccountId: t.fromAccountId,
+    toAccountId: t.toAccountId,
+    fromUserName: t.fromAccount?.user
+      ? `${t.fromAccount.user.firstName} ${t.fromAccount.user.lastName}`
+      : undefined,
+    toUserName: t.toAccount?.user
+      ? `${t.toAccount.user.firstName} ${t.toAccount.user.lastName}`
+      : undefined,
+  }));
+
+  res.json({ transactions: mapped });
+});
 app.listen(4000, () => console.log('Backend running on http://localhost:4000'));
