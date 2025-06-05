@@ -71,11 +71,7 @@ export function ChangeAccountModal({
             <Group justify="space-between">
               <Text fw={500}>{acc.currency}</Text>
               <Text fw={700}>
-                {acc.balance.toLocaleString('pl-PL', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}{' '}
-                {acc.currency}
+                {Number(acc.balance).toFixed(2)} {acc.currency}
               </Text>
             </Group>
           </Paper>
