@@ -34,6 +34,7 @@ export const AccountsHomeTab = () => {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [transferOpened, setTransferOpened] = useState(false);
   const [userId, setUserId] = useState<number | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
   useEffect(() => {
     const storedCurrency = localStorage.getItem('selectedCurrency');
@@ -95,6 +96,20 @@ export const AccountsHomeTab = () => {
     setSelectedCurrency(currency);
     localStorage.setItem('selectedCurrency', currency);
   };
+
+  useEffect(() => {
+    if (accounts.length > 0 && accounts[0].userId) {
+      setCurrentUserId(accounts[0].userId);
+    } else {
+      fetch('http://localhost:4000/api/me', { credentials: 'include' })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data && data.user && data.user.id) {
+            setCurrentUserId(data.user.id);
+          }
+        });
+    }
+  }, [accounts]);
 
   const selectedAccount = accounts.find((a) => a.currency === selectedCurrency);
 
@@ -188,12 +203,13 @@ export const AccountsHomeTab = () => {
         <ScrollArea h="30vh" mb="sm">
           <Box m="lg">
             {userId !== null &&
+              currentUserId !== null &&
               transactions.map((transaction) => (
                 <TransactionHistoryItem
                   key={transaction.id}
                   transaction={transaction}
                   accounts={accounts}
-                  currentUserId={userId}
+                  currentUserId={currentUserId}
                 />
               ))}
           </Box>

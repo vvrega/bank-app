@@ -8,7 +8,7 @@ import {
 
 type TransactionType = 'Deposit' | 'Withdraw' | 'Transfer' | 'Exchange';
 
-interface Transaction {
+export interface Transaction {
   id: string | number;
   type: TransactionType;
   amount: number;
@@ -21,6 +21,8 @@ interface Transaction {
   toAccountId?: number;
   fromUserName?: string;
   toUserName?: string;
+  fromAccountUserId?: number;
+  toAccountUserId?: number;
 }
 
 interface Account {
@@ -56,47 +58,61 @@ const typeConfig: Record<
 
 export function TransactionHistoryItem({
   transaction,
-  accounts,
   currentUserId,
 }: {
-  transaction: Transaction;
+  transaction: Transaction & {
+    fromAccountUserId?: number;
+    toAccountUserId?: number;
+  };
   accounts: Account[];
   currentUserId: number;
 }) {
-  const config = typeConfig[transaction.type];
-  const fromAccount = accounts.find(
-    (acc) => acc.id === transaction.fromAccountId
-  );
-  const isOutgoing = fromAccount && fromAccount.userId === currentUserId;
-  const sign = isOutgoing ? '-' : '+';
-  const color = isOutgoing ? '#c92a2a' : '#228B22';
+  const isOutgoing =
+    transaction.type === 'Transfer' &&
+    transaction.fromAccountUserId === currentUserId;
 
-  let transferTitle = config ? config.label : transaction.type;
+  const sign =
+    transaction.type === 'Transfer'
+      ? isOutgoing
+        ? '-'
+        : '+'
+      : transaction.type === 'Withdraw'
+      ? '-'
+      : '+';
+
+  const color =
+    transaction.type === 'Transfer'
+      ? isOutgoing
+        ? '#c92a2a'
+        : '#228B22'
+      : transaction.type === 'Withdraw'
+      ? '#c92a2a'
+      : '#228B22';
+
+  let transferTitle = typeConfig[transaction.type]?.label || transaction.type;
   if (transaction.type === 'Transfer') {
     if (isOutgoing && transaction.toUserName) {
       transferTitle = `Transfer to ${transaction.toUserName}`;
     } else if (!isOutgoing && transaction.fromUserName) {
       transferTitle = `Transfer from ${transaction.fromUserName}`;
-    } else {
-      transferTitle = config ? config.label : transaction.type;
     }
   }
 
   return (
     <Group align="center" gap="md" mb="xs">
       <ThemeIcon
-        color={config ? config.color : 'gray'}
+        color={typeConfig[transaction.type]?.color || 'gray'}
         variant="light"
         size="lg"
       >
-        {config ? config.icon : transaction.type?.[0] || '?'}
+        {typeConfig[transaction.type]?.icon || transaction.type?.[0] || '?'}
       </ThemeIcon>
       <Box>
         <Text size="sm" fw={500}>
           {transaction.type === 'Transfer'
             ? transferTitle
-            : config
-            ? config.label
+            : typeConfig[transaction.type]
+            ? typeConfig[transaction.type].label
             : transaction.type}
           {transaction.type === 'Exchange' && transaction.targetCurrency
             ? ` to ${transaction.targetCurrency}`

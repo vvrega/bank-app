@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Group,
@@ -14,6 +14,7 @@ import { IconCopy, IconCheck } from '@tabler/icons-react';
 
 import sharedStyles from '@/components/MainLayout/HomePanel/HomePanel.module.css';
 import { TransferModal } from '@/components/Modals/TransferModal';
+import { ContactTransactionsModal } from '@/components/Modals/ContactTransactionsModal';
 
 export interface Contact {
   id: number;
@@ -28,6 +29,7 @@ export interface Contact {
 
 interface Account {
   id: number;
+  userId: number;
   currency: string;
   balance: number;
 }
@@ -40,10 +42,35 @@ interface ContactListProps {
 export function ContactList({ contacts, accounts }: ContactListProps) {
   const [transferModalOpened, setTransferModalOpened] = useState(false);
   const [transferContact, setTransferContact] = useState<Contact | null>(null);
+  const [historyModalOpened, setHistoryModalOpened] = useState(false);
+  const [historyContact, setHistoryContact] = useState<Contact | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (accounts.length > 0 && accounts[0].userId) {
+      setCurrentUserId(accounts[0].userId);
+    } else {
+      fetch('http://localhost:4000/api/me', { credentials: 'include' })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data && data.user && data.user.id) {
+            setCurrentUserId(data.user.id);
+          } else {
+            setCurrentUserId(null);
+          }
+        })
+        .catch(() => setCurrentUserId(null));
+    }
+  }, [accounts]);
 
   const handleNewTransfer = (contact: Contact) => {
     setTransferContact(contact);
     setTransferModalOpened(true);
+  };
+
+  const handleSeeHistory = (contact: Contact) => {
+    setHistoryContact(contact);
+    setHistoryModalOpened(true);
   };
 
   return (
@@ -111,6 +138,7 @@ export function ContactList({ contacts, accounts }: ContactListProps) {
                       variant="light"
                       className={sharedStyles.stringButton}
                       style={{ fontSize: '12px' }}
+                      onClick={() => handleSeeHistory(contact)}
                     >
                       See transactions history
                     </Button>
@@ -132,6 +160,15 @@ export function ContactList({ contacts, accounts }: ContactListProps) {
               ? `${transferContact.contactUser.firstName} ${transferContact.contactUser.lastName}`
               : transferContact.name
           }
+        />
+      )}
+      {historyContact && currentUserId !== null && (
+        <ContactTransactionsModal
+          opened={historyModalOpened}
+          onClose={() => setHistoryModalOpened(false)}
+          contactUserId={historyContact.contactUserId}
+          accounts={accounts}
+          currentUserId={currentUserId}
         />
       )}
     </Box>
