@@ -11,11 +11,22 @@ export interface Contact {
   name: string;
   contactUserIban: string;
   contactUserId: number;
+  contactUser?: {
+    firstName: string;
+    lastName: string;
+  };
+}
+
+export interface Account {
+  id: number;
+  currency: string;
+  balance: number;
 }
 
 export const ContactsHomeTab = () => {
   const [modalOpened, setModalOpened] = useState(false);
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
 
   const fetchContacts = async () => {
     const res = await fetch('http://localhost:4000/api/contacts', {
@@ -27,8 +38,19 @@ export const ContactsHomeTab = () => {
     }
   };
 
+  const fetchAccounts = async () => {
+    const res = await fetch('http://localhost:4000/api/accounts', {
+      credentials: 'include',
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setAccounts(data.accounts);
+    }
+  };
+
   useEffect(() => {
     fetchContacts();
+    fetchAccounts();
   }, []);
 
   return (
@@ -36,7 +58,7 @@ export const ContactsHomeTab = () => {
       className={`${sharedStyles.tabsPanelContainer} ${styles.mainContainer}`}
     >
       <Group justify="space-between" m="lg">
-        <Text size="14px" mt="lg">
+        <Text size="18px" mt="lg" fw={700}>
           Your contacts list
         </Text>
         <Button
@@ -51,7 +73,7 @@ export const ContactsHomeTab = () => {
         </Button>
       </Group>
       <Box>
-        <ContactList contacts={contacts} />
+        <ContactList contacts={contacts} accounts={accounts} />
       </Box>
       <AddContactModal
         opened={modalOpened}

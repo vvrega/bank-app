@@ -12,6 +12,7 @@ import {
 } from '@tabler/icons-react';
 import { AccountActionModal } from '@/components/Modals/AccountActionModal';
 import { ChangeAccountModal } from '@/components/Modals/ChangeAccountModal';
+import { TransferModal } from '@/components/Modals/TransferModal';
 
 export type Currency = 'PLN' | 'USD' | 'EUR' | 'GBP';
 
@@ -25,12 +26,12 @@ export const AccountsHomeTab = () => {
   const [depositOpened, setDepositOpened] = useState(false);
   const [withdrawOpened, setWithdrawOpened] = useState(false);
   const [changeAccOpened, setChangeAccOpened] = useState(false);
-
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [selectedCurrency, setSelectedCurrency] = useState<
     Currency | undefined
   >(undefined);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [transferOpened, setTransferOpened] = useState(false);
 
   useEffect(() => {
     const storedCurrency = localStorage.getItem('selectedCurrency');
@@ -42,16 +43,17 @@ export const AccountsHomeTab = () => {
     }
   }, []);
 
+  const fetchAccounts = async () => {
+    const res = await fetch('http://localhost:4000/api/accounts', {
+      credentials: 'include',
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setAccounts(data.accounts);
+    }
+  };
+
   useEffect(() => {
-    const fetchAccounts = async () => {
-      const res = await fetch('http://localhost:4000/api/accounts', {
-        credentials: 'include',
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setAccounts(data.accounts);
-      }
-    };
     fetchAccounts();
   }, []);
 
@@ -113,11 +115,16 @@ export const AccountsHomeTab = () => {
           gap={0}
         >
           <Text size="40px" fw={700} mt="lg" ml="lg">
-            {selectedAccount
-              ? `${Number(selectedAccount.balance).toFixed(2)} ${
-                  selectedAccount.currency
-                }`
-              : ''}
+            {selectedAccount ? (
+              <>
+                {Number(selectedAccount.balance).toFixed(2)}{' '}
+                <span style={{ fontSize: '24px' }}>
+                  {selectedAccount.currency}
+                </span>
+              </>
+            ) : (
+              ''
+            )}
           </Text>
           <Button
             leftSection={<IconReplace size={14} />}
@@ -131,7 +138,7 @@ export const AccountsHomeTab = () => {
         <Text className={styles.currencyDescription}>
           {selectedAccount
             ? {
-                PLN: 'Złoty Polski',
+                PLN: 'Polish Zloty',
                 USD: 'US Dollar',
                 EUR: 'Euro',
                 GBP: 'British Pound',
@@ -170,6 +177,7 @@ export const AccountsHomeTab = () => {
             variant="light"
             size="xs"
             leftSection={<IconSend size={14} />}
+            onClick={() => setTransferOpened(true)}
           >
             Transfer
           </Button>
@@ -236,6 +244,12 @@ export const AccountsHomeTab = () => {
         accounts={accounts}
         selectedCurrency={selectedCurrency}
         onSelect={handleSelectCurrency}
+      />
+      <TransferModal
+        opened={transferOpened}
+        onClose={() => setTransferOpened(false)}
+        accounts={accounts}
+        onSuccess={fetchAccounts}
       />
     </Box>
   );

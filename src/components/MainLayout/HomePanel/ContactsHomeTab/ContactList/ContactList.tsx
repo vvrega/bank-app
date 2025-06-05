@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Box,
   Group,
@@ -12,6 +13,7 @@ import {
 import { IconCopy, IconCheck } from '@tabler/icons-react';
 
 import sharedStyles from '@/components/MainLayout/HomePanel/HomePanel.module.css';
+import { TransferModal } from '@/components/Modals/TransferModal';
 
 export interface Contact {
   id: number;
@@ -24,11 +26,26 @@ export interface Contact {
   };
 }
 
-interface ContactListProps {
-  contacts: Contact[];
+interface Account {
+  id: number;
+  currency: string;
+  balance: number;
 }
 
-export function ContactList({ contacts }: ContactListProps) {
+interface ContactListProps {
+  contacts: Contact[];
+  accounts: Account[];
+}
+
+export function ContactList({ contacts, accounts }: ContactListProps) {
+  const [transferModalOpened, setTransferModalOpened] = useState(false);
+  const [transferContact, setTransferContact] = useState<Contact | null>(null);
+
+  const handleNewTransfer = (contact: Contact) => {
+    setTransferContact(contact);
+    setTransferModalOpened(true);
+  };
+
   return (
     <Box>
       <ScrollArea h="45vh" mb="sm">
@@ -42,7 +59,7 @@ export function ContactList({ contacts }: ContactListProps) {
                 margin: '0 24px',
               }}
             >
-              <Group justify="space-between" align="center">
+              <Group>
                 <Box>
                   <Text fw={500}>{contact.name}</Text>
                   {contact.contactUser && (
@@ -79,20 +96,44 @@ export function ContactList({ contacts }: ContactListProps) {
                       )}
                     </CopyButton>
                   </Group>
+                  <Group gap={0}>
+                    <Button
+                      size="xs"
+                      variant="light"
+                      className={sharedStyles.stringButton}
+                      style={{ fontSize: '12px' }}
+                      onClick={() => handleNewTransfer(contact)}
+                    >
+                      New transfer
+                    </Button>
+                    <Button
+                      size="xs"
+                      variant="light"
+                      className={sharedStyles.stringButton}
+                      style={{ fontSize: '12px' }}
+                    >
+                      See transactions history
+                    </Button>
+                  </Group>
                 </Box>
-                <Button
-                  size="xs"
-                  variant="light"
-                  className={sharedStyles.stringButton}
-                  style={{ fontSize: '12px' }}
-                >
-                  See transactions history
-                </Button>
               </Group>
             </Paper>
           ))}
         </Stack>
       </ScrollArea>
+      {transferContact && (
+        <TransferModal
+          opened={transferModalOpened}
+          onClose={() => setTransferModalOpened(false)}
+          accounts={accounts}
+          initialIban={transferContact.contactUserIban}
+          initialName={
+            transferContact.contactUser
+              ? `${transferContact.contactUser.firstName} ${transferContact.contactUser.lastName}`
+              : transferContact.name
+          }
+        />
+      )}
     </Box>
   );
 }

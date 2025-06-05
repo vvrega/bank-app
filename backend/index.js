@@ -238,4 +238,63 @@ app.post('/api/accounts/withdraw', async (req, res) => {
   res.json({ success: true });
 });
 
+app.post('/api/accounts/transfer', async (req, res) => {
+  if (!req.session.userId)
+    return res.status(401).json({ error: 'Not authenticated' });
+  let { fromCurrency, amount, iban, title, name } = req.body;
+  amount = Math.round(Number(amount) * 100) / 100;
+  if (!fromCurrency || !amount || !iban || !title || !name)
+    return res.status(400).json({ error: 'Missing data' });
+
+  const fromAccount = await prisma.account.findFirst({
+    where: { userId: req.session.userId, currency: fromCurrency },
+  });
+  if (!fromAccount)
+    return res.status(404).json({ error: 'Your account not found' });
+  if (amount > fromAccount.balance)
+    return res.status(400).json({ error: 'Insufficient funds' });
+
+  const recipient = await prisma.user.findFirst({ where: { iban } });
+  if (!recipient)
+    return res.status(404).json({ error: 'Recipient IBAN not found' });
+
+  const sender = await prisma.user.findUnique({
+    where: { id: req.session.userId },
+  });
+  if (sender.iban === iban)
+    return res
+      .status(400)
+      .json({ error: 'Cannot transfer to your own account' });
+
+  const toAccount = await prisma.account.findFirst({
+    where: { userId: recipient.id, currency: fromCurrency },
+  });
+  if (!toAccount)
+    return res
+      .status(404)
+      .json({ error: 'Recipient does not have account in this currency' });
+
+  await prisma.$transaction([
+    prisma.account.update({
+      where: { id: fromAccount.id },
+      data: { balance: { decrement: amount } },
+    }),
+    prisma.account.update({
+      where: { id: toAccount.id },
+      data: { balance: { increment: amount } },
+    }),
+    prisma.transaction.create({
+      data: {
+        fromAccountId: fromAccount.id,
+        toAccountId: toAccount.id,
+        amount,
+        currency: fromCurrency,
+        description: title,
+      },
+    }),
+  ]);
+
+  res.json({ success: true });
+});
+
 app.listen(4000, () => console.log('Backend running on http://localhost:4000'));
