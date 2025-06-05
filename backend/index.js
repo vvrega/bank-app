@@ -195,7 +195,8 @@ app.get('/api/accounts', async (req, res) => {
 app.post('/api/accounts/deposit', async (req, res) => {
   if (!req.session.userId)
     return res.status(401).json({ error: 'Not authenticated' });
-  const { amount, currency } = req.body;
+  let { amount, currency } = req.body;
+  amount = Math.round(Number(amount) * 100) / 100;
   if (!amount || !currency)
     return res.status(400).json({ error: 'Missing data' });
   if (amount > 100000)
@@ -217,7 +218,8 @@ app.post('/api/accounts/deposit', async (req, res) => {
 app.post('/api/accounts/withdraw', async (req, res) => {
   if (!req.session.userId)
     return res.status(401).json({ error: 'Not authenticated' });
-  const { amount, currency } = req.body;
+  let { amount, currency } = req.body;
+  amount = Math.round(Number(amount) * 100) / 100;
   if (!amount || !currency)
     return res.status(400).json({ error: 'Missing data' });
 

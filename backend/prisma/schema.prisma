@@ -25,7 +25,7 @@ model Account {
   user      User     @relation(fields: [userId], references: [id])
   userId    Int
   currency  Currency
-  balance   Decimal  @default(0)
+  balance   Decimal  @default(0) @db.Decimal(18,2)
   fromTx    Transaction[] @relation("fromAccount")
   toTx      Transaction[] @relation("toAccount")
 }
@@ -36,7 +36,7 @@ model Transaction {
   fromAccountId Int?
   toAccount     Account?  @relation("toAccount", fields: [toAccountId], references: [id])
   toAccountId   Int?
-  amount        Decimal
+  amount        Decimal @db.Decimal(18,2)
   currency      Currency
   createdAt     DateTime  @default(now())
   description   String?

@@ -37,7 +37,7 @@ export function AccountActionModal({
       ? 2
       : currency === 'USD' || currency === 'EUR' || currency === 'GBP'
       ? 0.5
-      : 0.01;
+      : 1;
   const maxAmount = submitLabel === 'Withdraw' ? balance : 100000;
   const minAmountText =
     currency === 'PLN'
