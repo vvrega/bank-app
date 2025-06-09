@@ -7,6 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum TransactionType {
+  Deposit
+  Withdraw
+  Transfer
+  Exchange
+}
+
+enum Currency {
+  PLN
+  EUR
+  USD
+  GBP
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   firstName String
@@ -16,13 +30,16 @@ model User {
   password  String
   iban      String   @unique
   accounts  Account[]
+  ownerContacts   Contact[] @relation("OwnerContacts")
+  contactUsers    Contact[] @relation("ContactUser")
 }
+
 model Account {
   id        Int      @id @default(autoincrement())
   user      User     @relation(fields: [userId], references: [id])
   userId    Int
   currency  Currency
-  balance   Decimal  @default(0)
+  balance   Decimal  @default(0) @db.Decimal(18,2)
   fromTx    Transaction[] @relation("fromAccount")
   toTx      Transaction[] @relation("toAccount")
 }
@@ -33,15 +50,19 @@ model Transaction {
   fromAccountId Int?
   toAccount     Account?  @relation("toAccount", fields: [toAccountId], references: [id])
   toAccountId   Int?
-  amount        Decimal
+  amount        Decimal   @db.Decimal(18,2)
   currency      Currency
   createdAt     DateTime  @default(now())
   description   String?
+  type          TransactionType @default(Deposit)
 }
 
-enum Currency {
-  PLN
-  EUR
-  USD
-  GBP
+model Contact {
+  id              Int    @id @default(autoincrement())
+  owner           User   @relation("OwnerContacts", fields: [ownerId], references: [id])
+  ownerId         Int
+  contactUser     User   @relation("ContactUser", fields: [contactUserId], references: [id])
+  contactUserId   Int
+  contactUserIban String
+  name            String
 }

@@ -1,13 +1,6 @@
-import { useState } from 'react';
-import {
-  Modal,
-  Text,
-  Group,
-  Button,
-  Box,
-  CloseButton,
-  Paper,
-} from '@mantine/core';
+import { Modal, Text, Group, Box, CloseButton, Paper } from '@mantine/core';
+
+import type { Currency } from '@/components/MainLayout/HomePanel/AccountsHomeTab/AccountsHomeTab';
 
 interface Account {
   currency: 'PLN' | 'USD' | 'EUR' | 'GBP';
@@ -18,8 +11,8 @@ interface ChangeAccountModalProps {
   opened: boolean;
   onClose: () => void;
   accounts: Account[];
-  selectedCurrency: string;
-  onSelect: (currency: string) => void;
+  selectedCurrency: Currency;
+  onSelect: (currency: Currency) => void;
 }
 
 export function ChangeAccountModal({
@@ -70,11 +63,7 @@ export function ChangeAccountModal({
             <Group justify="space-between">
               <Text fw={500}>{acc.currency}</Text>
               <Text fw={700}>
-                {acc.balance.toLocaleString('pl-PL', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}{' '}
-                {acc.currency}
+                {Number(acc.balance).toFixed(2)} {acc.currency}
               </Text>
             </Group>
           </Paper>

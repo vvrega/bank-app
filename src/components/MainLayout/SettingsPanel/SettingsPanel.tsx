@@ -10,6 +10,7 @@ import {
 } from '@mantine/core';
 import { IconCheck, IconCopy } from '@tabler/icons-react';
 import { useState, useEffect } from 'react';
+import styles from './SettingsPanel.module.css';
 import sharedStyles from '../HomePanel/HomePanel.module.css';
 
 function isValidPassword(password: string) {
@@ -75,10 +76,10 @@ export const SettingsPanel = () => {
 
   return (
     <>
-      <Text size="40px" fw={700} mb="xl">
-        Account Settings
-      </Text>
-      <Box className={sharedStyles.tabsPanelContainer} maw="40vw" p="40px">
+      <Text className={sharedStyles.headerTitle}>Account Settings</Text>
+      <Box
+        className={`${sharedStyles.tabsPanelContainer} ${styles.settingsContainer}`}
+      >
         <TextInput
           label="IBAN Number"
           value={iban}

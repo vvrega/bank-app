@@ -125,4 +125,289 @@ app.post('/api/change-password', async (req, res) => {
   res.json({ success: true });
 });
 
+// Get user contacts
+app.get('/api/contacts', async (req, res) => {
+  if (!req.session.userId)
+    return res.status(401).json({ error: 'Not authenticated' });
+  const contacts = await prisma.contact.findMany({
+    where: { ownerId: req.session.userId },
+    include: { contactUser: true },
+  });
+  res.json({
+    contacts: contacts.map((c) => ({
+      id: c.id,
+      name: c.name,
+      contactUserIban: c.contactUserIban,
+      contactUserId: c.contactUserId,
+      contactUser: c.contactUser
+        ? {
+            firstName: c.contactUser.firstName,
+            lastName: c.contactUser.lastName,
+          }
+        : undefined,
+    })),
+  });
+});
+
+// Add new contact
+app.post('/api/contacts', async (req, res) => {
+  if (!req.session.userId)
+    return res.status(401).json({ error: 'Not authenticated' });
+  const { name, iban } = req.body;
+  if (!name || !iban)
+    return res.status(400).json({ error: 'Name and IBAN are required' });
+
+  const user = await prisma.user.findUnique({ where: { iban } });
+  if (!user) return res.status(404).json({ error: 'No user with this IBAN' });
+
+  // Check if contact already exists
+  const exists = await prisma.contact.findFirst({
+    where: {
+      ownerId: req.session.userId,
+      contactUserId: user.id,
+    },
+  });
+  if (exists) return res.status(409).json({ error: 'Contact already exists' });
+
+  await prisma.contact.create({
+    data: {
+      ownerId: req.session.userId,
+      contactUserId: user.id,
+      contactUserIban: iban,
+      name,
+    },
+  });
+
+  res.json({ success: true });
+});
+
+// Get user accounts
+app.get('/api/accounts', async (req, res) => {
+  if (!req.session.userId)
+    return res.status(401).json({ error: 'Not authenticated' });
+  const accounts = await prisma.account.findMany({
+    where: { userId: req.session.userId },
+    select: { id: true, currency: true, balance: true },
+  });
+  res.json({ accounts });
+});
+
+app.post('/api/accounts/deposit', async (req, res) => {
+  if (!req.session.userId)
+    return res.status(401).json({ error: 'Not authenticated' });
+  let { amount, currency } = req.body;
+  amount = Math.round(Number(amount) * 100) / 100;
+  if (!amount || !currency)
+    return res.status(400).json({ error: 'Missing data' });
+  if (amount > 100000)
+    return res.status(400).json({ error: 'Maximum deposit is 100000' });
+
+  const account = await prisma.account.findFirst({
+    where: { userId: req.session.userId, currency },
+  });
+  if (!account) return res.status(404).json({ error: 'Account not found' });
+
+  await prisma.account.update({
+    where: { id: account.id },
+    data: { balance: { increment: amount } },
+  });
+
+  await prisma.transaction.create({
+    data: {
+      toAccountId: account.id,
+      amount,
+      currency,
+      type: 'Deposit',
+    },
+  });
+
+  res.json({ success: true });
+});
+
+app.post('/api/accounts/withdraw', async (req, res) => {
+  if (!req.session.userId)
+    return res.status(401).json({ error: 'Not authenticated' });
+  let { amount, currency } = req.body;
+  amount = Math.round(Number(amount) * 100) / 100;
+  if (!amount || !currency)
+    return res.status(400).json({ error: 'Missing data' });
+
+  const account = await prisma.account.findFirst({
+    where: { userId: req.session.userId, currency },
+  });
+  if (!account) return res.status(404).json({ error: 'Account not found' });
+  if (amount > account.balance)
+    return res.status(400).json({ error: 'Insufficient funds' });
+
+  await prisma.account.update({
+    where: { id: account.id },
+    data: { balance: { decrement: amount } },
+  });
+
+  await prisma.transaction.create({
+    data: {
+      fromAccountId: account.id,
+      amount,
+      currency,
+      type: 'Withdraw',
+    },
+  });
+
+  res.json({ success: true });
+});
+
+app.post('/api/accounts/transfer', async (req, res) => {
+  if (!req.session.userId)
+    return res.status(401).json({ error: 'Not authenticated' });
+  let { fromCurrency, amount, iban, title, name } = req.body;
+  amount = Math.round(Number(amount) * 100) / 100;
+  if (!fromCurrency || !amount || !iban || !title || !name)
+    return res.status(400).json({ error: 'Missing data' });
+
+  const fromAccount = await prisma.account.findFirst({
+    where: { userId: req.session.userId, currency: fromCurrency },
+  });
+  if (!fromAccount)
+    return res.status(404).json({ error: 'Your account not found' });
+  if (amount > fromAccount.balance)
+    return res.status(400).json({ error: 'Insufficient funds' });
+
+  const recipient = await prisma.user.findFirst({ where: { iban } });
+  if (!recipient)
+    return res.status(404).json({ error: 'Recipient IBAN not found' });
+
+  const sender = await prisma.user.findUnique({
+    where: { id: req.session.userId },
+  });
+  if (sender.iban === iban)
+    return res
+      .status(400)
+      .json({ error: 'Cannot transfer to your own account' });
+
+  const toAccount = await prisma.account.findFirst({
+    where: { userId: recipient.id, currency: fromCurrency },
+  });
+  if (!toAccount)
+    return res
+      .status(404)
+      .json({ error: 'Recipient does not have account in this currency' });
+
+  await prisma.$transaction([
+    prisma.account.update({
+      where: { id: fromAccount.id },
+      data: { balance: { decrement: amount } },
+    }),
+    prisma.account.update({
+      where: { id: toAccount.id },
+      data: { balance: { increment: amount } },
+    }),
+    prisma.transaction.create({
+      data: {
+        fromAccountId: fromAccount.id,
+        toAccountId: toAccount.id,
+        amount,
+        currency: fromCurrency,
+        description: title,
+        type: 'Transfer',
+      },
+    }),
+  ]);
+
+  res.json({ success: true });
+});
+
+app.get('/api/transactions', async (req, res) => {
+  if (!req.session.userId)
+    return res.status(401).json({ error: 'Not authenticated' });
+
+  const contactUserId = req.query.contactUserId
+    ? Number(req.query.contactUserId)
+    : null;
+
+  const userAccounts = await prisma.account.findMany({
+    where: { userId: req.session.userId },
+    select: { id: true, userId: true },
+  });
+  const userAccountIds = userAccounts.map((a) => a.id);
+
+  let transactions = [];
+
+  if (contactUserId) {
+    // Get contact user accounts
+    const contactAccounts = await prisma.account.findMany({
+      where: { userId: contactUserId },
+      select: { id: true, userId: true },
+    });
+    const contactAccountIds = contactAccounts.map((a) => a.id);
+
+    // Transactions between user and contact
+    transactions = await prisma.transaction.findMany({
+      where: {
+        OR: [
+          {
+            fromAccountId: { in: userAccountIds },
+            toAccountId: { in: contactAccountIds },
+          },
+          {
+            fromAccountId: { in: contactAccountIds },
+            toAccountId: { in: userAccountIds },
+          },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        fromAccount: { include: { user: true } },
+        toAccount: { include: { user: true } },
+      },
+    });
+  } else {
+    // Get all transactions for user accounts
+    transactions = await prisma.transaction.findMany({
+      where: {
+        OR: [
+          { fromAccountId: { in: userAccountIds } },
+          { toAccountId: { in: userAccountIds } },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        fromAccount: { include: { user: true } },
+        toAccount: { include: { user: true } },
+      },
+    });
+  }
+
+  const formatDate = (date) => {
+    const d = new Date(date);
+    const day = d.getDate().toString().padStart(2, '0');
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const year = d.getFullYear();
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    return `${day}.${month}.${year} ${hours}:${minutes}`;
+  };
+
+  const mapped = transactions.map((t) => ({
+    id: t.id,
+    type: t.type,
+    amount: t.amount,
+    currency: t.currency,
+    date: formatDate(t.createdAt),
+    description: t.description,
+    targetCurrency: t.targetCurrency,
+    fromAccountId: t.fromAccountId,
+    toAccountId: t.toAccountId,
+    fromUserName: t.fromAccount?.user
+      ? `${t.fromAccount.user.firstName} ${t.fromAccount.user.lastName}`
+      : undefined,
+    toUserName: t.toAccount?.user
+      ? `${t.toAccount.user.firstName} ${t.toAccount.user.lastName}`
+      : undefined,
+    fromAccountUserId: t.fromAccount?.userId,
+    toAccountUserId: t.toAccount?.userId,
+  }));
+
+  res.json({ transactions: mapped });
+});
+
 app.listen(4000, () => console.log('Backend running on http://localhost:4000'));

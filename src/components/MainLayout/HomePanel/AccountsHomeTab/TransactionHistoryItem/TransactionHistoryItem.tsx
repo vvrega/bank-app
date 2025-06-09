@@ -6,72 +6,116 @@ import {
   IconArrowsExchange,
 } from '@tabler/icons-react';
 
-type TransactionType = 'deposit' | 'withdraw' | 'exchange' | 'external';
+type TransactionType = 'Deposit' | 'Withdraw' | 'Transfer' | 'Exchange';
 
-interface Transaction {
-  id: string;
+export interface Transaction {
+  id: string | number;
   type: TransactionType;
   amount: number;
   currency: string;
   date: string;
   description?: string;
-  targetCurrency?: string; // for internal
-  targetUser?: string; // for external
+  targetCurrency?: string;
+  targetUser?: string;
+  fromAccountId?: number;
+  toAccountId?: number;
+  fromUserName?: string;
+  toUserName?: string;
+  fromAccountUserId?: number;
+  toAccountUserId?: number;
+}
+
+interface Account {
+  id: number;
+  userId: number;
 }
 
 const typeConfig: Record<
   TransactionType,
   { icon: React.ReactNode; color: string; label: string }
 > = {
-  deposit: {
+  Deposit: {
     icon: <IconPlus size={18} />,
     color: 'green',
     label: 'Deposit',
   },
-  withdraw: {
+  Withdraw: {
     icon: <IconTransferOut size={18} />,
     color: 'red',
     label: 'Withdraw',
   },
-  exchange: {
+  Exchange: {
     icon: <IconArrowsExchange size={18} />,
     color: 'blue',
     label: 'Currency exchange',
   },
-  external: {
+  Transfer: {
     icon: <IconSend size={18} />,
     color: 'orange',
-    label: 'External transfer',
+    label: 'Transfer',
   },
-};
-
-const valueColor: Record<TransactionType, string> = {
-  deposit: '#228B22',
-  exchange: '#212529',
-  withdraw: '#c92a2a',
-  external: '#c92a2a',
 };
 
 export function TransactionHistoryItem({
   transaction,
+  currentUserId,
 }: {
-  transaction: Transaction;
+  transaction: Transaction & {
+    fromAccountUserId?: number;
+    toAccountUserId?: number;
+  };
+  accounts: Account[];
+  currentUserId: number;
 }) {
-  const config = typeConfig[transaction.type];
+  const isOutgoing =
+    transaction.type === 'Transfer' &&
+    transaction.fromAccountUserId === currentUserId;
+
+  const sign =
+    transaction.type === 'Transfer'
+      ? isOutgoing
+        ? '-'
+        : '+'
+      : transaction.type === 'Withdraw'
+      ? '-'
+      : '+';
+
+  const color =
+    transaction.type === 'Transfer'
+      ? isOutgoing
+        ? '#c92a2a'
+        : '#228B22'
+      : transaction.type === 'Withdraw'
+      ? '#c92a2a'
+      : '#228B22';
+
+  let transferTitle = typeConfig[transaction.type]?.label || transaction.type;
+  if (transaction.type === 'Transfer') {
+    if (isOutgoing && transaction.toUserName) {
+      transferTitle = `Transfer to ${transaction.toUserName}`;
+    } else if (!isOutgoing && transaction.fromUserName) {
+      transferTitle = `Transfer from ${transaction.fromUserName}`;
+    }
+  }
 
   return (
     <Group align="center" gap="md" mb="xs">
-      <ThemeIcon color={config.color} variant="light" size="lg">
-        {config.icon}
+      <ThemeIcon
+        color={typeConfig[transaction.type]?.color || 'gray'}
+        variant="light"
+        size="lg"
+      >
+        {typeConfig[transaction.type]?.icon || transaction.type?.[0] || '?'}
       </ThemeIcon>
       <Box>
         <Text size="sm" fw={500}>
-          {config.label}
-          {transaction.type === 'exchange' && transaction.targetCurrency
+          {transaction.type === 'Transfer'
+            ? transferTitle
+            : typeConfig[transaction.type]
+            ? typeConfig[transaction.type].label
+            : transaction.type}
+          {transaction.type === 'Exchange' && transaction.targetCurrency
             ? ` to ${transaction.targetCurrency}`
-            : ''}
-          {transaction.type === 'external' && transaction.targetUser
-            ? ` to ${transaction.targetUser}`
             : ''}
         </Text>
         <Text size="xs" c="dimmed">
@@ -83,14 +127,9 @@ export function TransactionHistoryItem({
           </Text>
         )}
       </Box>
-      <Text
-        fw={700}
-        size="sm"
-        ml="auto"
-        style={{ color: valueColor[transaction.type] }}
-      >
-        {transaction.amount > 0 ? '+' : ''}
-        {transaction.amount} {transaction.currency}
+      <Text fw={700} size="sm" ml="auto" c={color}>
+        {sign}
+        {Math.abs(transaction.amount).toFixed(2)} {transaction.currency}
       </Text>
     </Group>
   );

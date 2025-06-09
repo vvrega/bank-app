@@ -1,10 +1,15 @@
 .mainContainer {
-  padding: 10px 20px;
   margin: 5% 5%;
 }
 
 .tabsList {
   width: 200px;
+}
+
+.panelsBox {
+  position: absolute;
+  top: 8vh;
+  left: 25vw;
 }
 
 .tabElement {
@@ -17,10 +22,7 @@
 }
 
 .tabsPanel {
-  margin-left: 10%;
-  margin-top: -60px;
   width: 100%;
-  max-width: 50vw;
 }
 
 .tabElement :global(.mantine-Tabs-tabSection) {
@@ -30,4 +32,21 @@
 .tabElement :global(.mantine-Tabs-tabLabel) {
   text-align: left !important;
   justify-content: flex-start !important;
+}
+
+@media (max-width: 1200px) {
+  .mainContainer {
+    margin: 2% 0;
+    padding: 10px 20px;
+  }
+  .panelsBox {
+    left: 30vw;
+  }
+}
+
+@media (max-width: 768px) {
+  .panelsBox {
+    top: 70px;
+    left: 10vw;
+  }
 }
