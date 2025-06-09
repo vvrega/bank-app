@@ -144,7 +144,7 @@ export function AccountActionModal({
         ))}
       </Group>
       {error && (
-        <Text color="red" size="sm" mb="sm">
+        <Text c="red" size="sm" mb="sm">
           {error}
         </Text>
       )}

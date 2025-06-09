@@ -90,13 +90,13 @@ export function ContactList({ contacts, accounts }: ContactListProps) {
                 <Box>
                   <Text fw={500}>{contact.name}</Text>
                   {contact.contactUser && (
-                    <Text size="xs" c="dimmed" style={{ marginBottom: 2 }}>
+                    <Text size="xs" c="dimmed" mb={2}>
                       {contact.contactUser.firstName}{' '}
                       {contact.contactUser.lastName}
                     </Text>
                   )}
                   <Group gap="xs" mt={4}>
-                    <Text size="xs" c="dimmed" style={{ letterSpacing: 1 }}>
+                    <Text size="xs" c="dimmed" lts={1}>
                       {contact.contactUserIban}
                     </Text>
                     <CopyButton value={contact.contactUserIban}>

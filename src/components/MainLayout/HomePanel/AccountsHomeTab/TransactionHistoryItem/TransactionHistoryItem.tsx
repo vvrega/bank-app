@@ -127,7 +127,7 @@ export function TransactionHistoryItem({
           </Text>
         )}
       </Box>
-      <Text fw={700} size="sm" ml="auto" style={{ color }}>
+      <Text fw={700} size="sm" ml="auto" c={color}>
         {sign}
         {Math.abs(transaction.amount).toFixed(2)} {transaction.currency}
       </Text>

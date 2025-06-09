@@ -125,10 +125,7 @@ const MainLayout = () => {
           </Drawer>
         </>
       ) : (
-        <Group
-          w={200}
-          style={{ flexDirection: 'column', alignItems: 'flex-start' }}
-        >
+        <Group w={200} display="flex" dir="column" align="flex-start">
           <Group
             display="flex"
             dir="column"

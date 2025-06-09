@@ -60,7 +60,7 @@ export function AddContactModal({
         required
       />
       {error && (
-        <Text color="red" size="sm" mb="sm">
+        <Text c="red" size="sm" mb="sm">
           {error}
         </Text>
       )}

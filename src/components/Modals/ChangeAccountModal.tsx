@@ -1,12 +1,4 @@
-import {
-  Modal,
-  Text,
-  Group,
-  Button,
-  Box,
-  CloseButton,
-  Paper,
-} from '@mantine/core';
+import { Modal, Text, Group, Box, CloseButton, Paper } from '@mantine/core';
 
 import type { Currency } from '@/components/MainLayout/HomePanel/AccountsHomeTab/AccountsHomeTab';
 
