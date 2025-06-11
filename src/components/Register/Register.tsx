@@ -1,105 +1,48 @@
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { signIn } from 'next-auth/react';
 import {
-  Box,
   Button,
-  PasswordInput,
   TextInput,
+  PasswordInput,
+  Box,
   Text,
   Group,
 } from '@mantine/core';
+import { useState } from 'react';
 
-interface RegisterProps {
-  onSwitch: () => void;
-}
+type RegisterForm = {
+  login: string;
+  password: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  iban: string;
+};
 
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
+export function Register({ onSwitch }: { onSwitch: () => void }) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterForm>();
+  const [error, setError] = useState('');
 
-function isValidPassword(password: string) {
-  // At least 8 chars, one uppercase, one symbol
-  return /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/.test(
-    password
-  );
-}
-
-export function Register({ onSwitch }: RegisterProps) {
-  const [login, setLogin] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
-
-  const loginError =
-    login && login.length < 6
-      ? 'Login must be at least 6 characters'
-      : undefined;
-  const emailError =
-    email && !isValidEmail(email) ? 'Invalid email address' : undefined;
-  const passwordError =
-    password && !isValidPassword(password)
-      ? 'Password must be at least 8 characters, contain a capital letter and a symbol'
-      : undefined;
-  const confirmError =
-    password && confirm && password !== confirm
-      ? "Passwords don't match"
-      : undefined;
-  const firstNameError =
-    firstName && firstName.length < 2
-      ? 'First name must be at least 2 characters'
-      : undefined;
-  const lastNameError =
-    lastName && lastName.length < 2
-      ? 'Last name must be at least 2 characters'
-      : undefined;
-
-  const isFormValid =
-    !loginError &&
-    !emailError &&
-    !passwordError &&
-    !confirmError &&
-    !firstNameError &&
-    !lastNameError &&
-    login &&
-    email &&
-    password &&
-    confirm &&
-    firstName &&
-    lastName;
-
-  const handleRegister = async () => {
-    setErrorMsg(null);
-    setSuccessMsg(null);
-    if (!isFormValid) return;
-    setLoading(true);
-    try {
-      const res = await fetch('http://localhost:4000/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ login, email, password, firstName, lastName }),
-        credentials: 'include',
+  const onSubmit = async (data: RegisterForm) => {
+    setError('');
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (res.ok) {
+      await signIn('credentials', {
+        redirect: false,
+        login: data.login,
+        password: data.password,
       });
-      const data = await res.json();
-      if (res.ok) {
-        setSuccessMsg('Registration successful! You can now log in.');
-        setLogin('');
-        setFirstName('');
-        setLastName('');
-        setEmail('');
-        setPassword('');
-        setConfirm('');
-        setTimeout(() => onSwitch(), 1500);
-      } else {
-        setErrorMsg(data.error || 'Registration failed');
-      }
-    } catch (e) {
-      setErrorMsg('Registration failed');
-    } finally {
-      setLoading(false);
+    } else {
+      const result = await res.json();
+      setError(result.error || 'Registration error');
     }
   };
 
@@ -122,89 +65,45 @@ export function Register({ onSwitch }: RegisterProps) {
           backgroundColor: 'white',
         }}
       >
-        <Text size="lg" fw={700} mb="md" ta="center">
-          Register
-        </Text>
-        <TextInput
-          label="Login"
-          placeholder="Choose a login"
-          value={login}
-          onChange={(e) => setLogin(e.currentTarget.value)}
-          mb="sm"
-          required
-          error={loginError}
-        />
-        <TextInput
-          label="First Name"
-          placeholder="Enter Name"
-          value={firstName}
-          onChange={(e) => setFirstName(e.currentTarget.value)}
-          mb="sm"
-          required
-          error={firstNameError}
-        />
-        <TextInput
-          label="Last Name"
-          placeholder="Enter Surname"
-          value={lastName}
-          onChange={(e) => setLastName(e.currentTarget.value)}
-          mb="sm"
-          required
-          error={lastNameError}
-        />
-        <TextInput
-          label="Email"
-          placeholder="you@email.com"
-          value={email}
-          onChange={(e) => setEmail(e.currentTarget.value)}
-          mb="sm"
-          required
-          error={emailError}
-        />
-        <PasswordInput
-          label="Password"
-          placeholder="Create password"
-          value={password}
-          onChange={(e) => setPassword(e.currentTarget.value)}
-          mb="sm"
-          required
-          error={passwordError}
-        />
-        <PasswordInput
-          label="Confirm password"
-          placeholder="Repeat password"
-          value={confirm}
-          onChange={(e) => setConfirm(e.currentTarget.value)}
-          mb="md"
-          required
-          error={confirmError}
-        />
-        {errorMsg && (
-          <Text c="red" size="sm" mb="xs" ta="center">
-            {errorMsg}
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <TextInput
+            label="Login"
+            {...register('login', { required: true })}
+            mb="sm"
+            error={errors.login && 'Login is required'}
+          />
+          <PasswordInput
+            label="Password"
+            {...register('password', { required: true })}
+            mb="sm"
+            error={errors.password && 'Password is required'}
+          />
+          <TextInput
+            label="Email"
+            {...register('email', { required: true })}
+            mb="sm"
+            error={errors.email && 'Email is required'}
+          />
+          <TextInput label="First Name" {...register('firstName')} mb="sm" />
+          <TextInput label="Last Name" {...register('lastName')} mb="sm" />
+          <TextInput label="IBAN" {...register('iban')} mb="md" />
+          <Group justify="space-between" mb="sm">
+            <Button fullWidth type="submit" loading={isSubmitting}>
+              Register
+            </Button>
+          </Group>
+          {error && (
+            <Text color="red" ta="center">
+              {error}
+            </Text>
+          )}
+          <Text size="sm" ta="center">
+            Already have an account?{' '}
+            <Button variant="subtle" size="xs" onClick={onSwitch} type="button">
+              Login
+            </Button>
           </Text>
-        )}
-        {successMsg && (
-          <Text c="green" size="sm" mb="xs" ta="center">
-            {successMsg}
-          </Text>
-        )}
-        <Group justify="space-between" mb="sm">
-          <Button
-            fullWidth
-            onClick={handleRegister}
-            disabled={!isFormValid || loading}
-            loading={loading}
-          >
-            Register
-          </Button>
-        </Group>
-        <Text size="sm" ta="center">
-          Already have an account?{' '}
-          <Button variant="subtle" size="xs" onClick={onSwitch}>
-            Login
-          </Button>
-        </Text>
+        </form>
       </Box>
     </Box>
   );

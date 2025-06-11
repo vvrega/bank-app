@@ -1,48 +1,36 @@
-'use client';
-
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { signIn } from 'next-auth/react';
 import {
-  Box,
   Button,
-  PasswordInput,
   TextInput,
+  PasswordInput,
+  Box,
   Text,
   Group,
 } from '@mantine/core';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
-interface LoginProps {
-  onSwitch: () => void;
-}
+type LoginForm = {
+  login: string;
+  password: string;
+};
 
-export function Login({ onSwitch }: LoginProps) {
-  const [login, setLogin] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const router = useRouter();
+export function Login({ onSwitch }: { onSwitch: () => void }) {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginForm>();
+  const [error, setError] = useState('');
 
-  const handleLogin = async () => {
-    setErrorMsg(null);
-    setLoading(true);
-    try {
-      const res = await fetch('http://localhost:4000/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ login, password }),
-        credentials: 'include',
-      });
-      const data = await res.json();
-      if (res.ok) {
-        router.push('/dashboard');
-      } else {
-        setErrorMsg(data.error || 'Login failed');
-      }
-    } catch (e) {
-      setErrorMsg('Login failed');
-    } finally {
-      setLoading(false);
-    }
+  const onSubmit = async (data: LoginForm) => {
+    setError('');
+    const res = await signIn('credentials', {
+      redirect: false,
+      login: data.login,
+      password: data.password,
+    });
+    if (res?.error) setError('Invalid login or password');
   };
 
   return (
@@ -64,46 +52,38 @@ export function Login({ onSwitch }: LoginProps) {
           backgroundColor: 'white',
         }}
       >
-        <Text size="lg" fw={700} mb="md" ta="center">
-          Login
-        </Text>
-        <TextInput
-          label="Login"
-          placeholder="Your login"
-          value={login}
-          onChange={(e) => setLogin(e.currentTarget.value)}
-          mb="sm"
-          required
-        />
-        <PasswordInput
-          label="Password"
-          placeholder="Your password"
-          value={password}
-          onChange={(e) => setPassword(e.currentTarget.value)}
-          mb="md"
-          required
-        />
-        {errorMsg && (
-          <Text c="red" size="sm" mb="xs" ta="center">
-            {errorMsg}
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <TextInput
+            label="Login"
+            placeholder="Your login"
+            {...register('login', { required: true })}
+            mb="sm"
+            error={errors.login && 'Login is required'}
+          />
+          <PasswordInput
+            label="Password"
+            placeholder="Your password"
+            {...register('password', { required: true })}
+            mb="md"
+            error={errors.password && 'Password is required'}
+          />
+          <Group justify="space-between" mb="sm">
+            <Button fullWidth type="submit" loading={isSubmitting}>
+              Login
+            </Button>
+          </Group>
+          {error && (
+            <Text c="red" ta="center">
+              {error}
+            </Text>
+          )}
+          <Text size="sm" ta="center">
+            Don&apos;t have an account?{' '}
+            <Button variant="subtle" size="xs" onClick={onSwitch} type="button">
+              Register
+            </Button>
           </Text>
-        )}
-        <Group justify="space-between" mb="sm">
-          <Button
-            fullWidth
-            onClick={handleLogin}
-            disabled={!login || !password || loading}
-            loading={loading}
-          >
-            Login
-          </Button>
-        </Group>
-        <Text size="sm" ta="center">
-          Don&apos;t have an account?{' '}
-          <Button variant="subtle" size="xs" onClick={onSwitch}>
-            Register
-          </Button>
-        </Text>
+        </form>
       </Box>
     </Box>
   );

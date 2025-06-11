@@ -19,7 +19,7 @@ CREATE TABLE `Account` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `userId` INTEGER NOT NULL,
     `currency` ENUM('PLN', 'EUR', 'USD', 'GBP') NOT NULL,
-    `balance` DECIMAL(65, 30) NOT NULL DEFAULT 0,
+    `balance` DECIMAL(18, 2) NOT NULL DEFAULT 0,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -29,10 +29,22 @@ CREATE TABLE `Transaction` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `fromAccountId` INTEGER NULL,
     `toAccountId` INTEGER NULL,
-    `amount` DECIMAL(65, 30) NOT NULL,
+    `amount` DECIMAL(18, 2) NOT NULL,
     `currency` ENUM('PLN', 'EUR', 'USD', 'GBP') NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `description` VARCHAR(191) NULL,
+    `type` ENUM('Deposit', 'Withdraw', 'Transfer', 'Exchange') NOT NULL DEFAULT 'Deposit',
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Contact` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `ownerId` INTEGER NOT NULL,
+    `contactUserId` INTEGER NOT NULL,
+    `contactUserIban` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -45,3 +57,9 @@ ALTER TABLE `Transaction` ADD CONSTRAINT `Transaction_fromAccountId_fkey` FOREIG
 
 -- AddForeignKey
 ALTER TABLE `Transaction` ADD CONSTRAINT `Transaction_toAccountId_fkey` FOREIGN KEY (`toAccountId`) REFERENCES `Account`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Contact` ADD CONSTRAINT `Contact_ownerId_fkey` FOREIGN KEY (`ownerId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Contact` ADD CONSTRAINT `Contact_contactUserId_fkey` FOREIGN KEY (`contactUserId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
