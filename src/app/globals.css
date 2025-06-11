@@ -5,7 +5,7 @@ body {
 }
 
 body {
-  background: #f1f3f5;
+  background: #f1f3f5 !important;
   font-family: 'Roboto', Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

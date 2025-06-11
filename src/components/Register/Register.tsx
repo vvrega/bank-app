@@ -12,18 +12,23 @@ import {
 } from '@mantine/core';
 import { useState } from 'react';
 
-const schema = z.object({
-  login: z.string().min(1, 'Login is required'),
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain a capital letter')
-    .regex(/[^A-Za-z0-9]/, 'Password must contain a symbol'),
-  email: z.string().email('Invalid email address'),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  iban: z.string().optional(),
-});
+const schema = z
+  .object({
+    login: z.string().min(1, 'Login is required'),
+    firstName: z.string().min(1, 'First name is required'),
+    lastName: z.string().min(1, 'Last name is required'),
+    email: z.string().email('Invalid email address'),
+    password: z
+      .string()
+      .min(8, 'Password must be at least 8 characters')
+      .regex(/[A-Z]/, 'Password must contain a capital letter')
+      .regex(/[^A-Za-z0-9]/, 'Password must contain a symbol'),
+    confirm: z.string().min(1, 'Please confirm your password'),
+  })
+  .refine((data) => data.password === data.confirm, {
+    message: "Passwords don't match",
+    path: ['confirm'],
+  });
 
 type RegisterForm = z.infer<typeof schema>;
 
@@ -32,6 +37,7 @@ export function Register({ onSwitch }: { onSwitch: () => void }) {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    reset,
   } = useForm<RegisterForm>({
     resolver: zodResolver(schema),
   });
@@ -42,7 +48,13 @@ export function Register({ onSwitch }: { onSwitch: () => void }) {
     const res = await fetch('/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        login: data.login,
+        password: data.password,
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+      }),
     });
     if (res.ok) {
       await signIn('credentials', {
@@ -75,42 +87,51 @@ export function Register({ onSwitch }: { onSwitch: () => void }) {
           backgroundColor: 'white',
         }}
       >
+        <Text size="lg" fw={700} mb="md" ta="center">
+          Register
+        </Text>
         <form onSubmit={handleSubmit(onSubmit)}>
           <TextInput
             label="Login"
+            placeholder="Choose a login"
             {...register('login')}
             mb="sm"
             error={errors.login?.message}
           />
-          <PasswordInput
-            label="Password"
-            {...register('password')}
-            mb="sm"
-            error={errors.password?.message}
-          />
-          <TextInput
-            label="Email"
-            {...register('email')}
-            mb="sm"
-            error={errors.email?.message}
-          />
           <TextInput
             label="First Name"
+            placeholder="Enter Name"
             {...register('firstName')}
             mb="sm"
             error={errors.firstName?.message}
           />
           <TextInput
             label="Last Name"
+            placeholder="Enter Surname"
             {...register('lastName')}
             mb="sm"
             error={errors.lastName?.message}
           />
           <TextInput
-            label="IBAN"
-            {...register('iban')}
+            label="Email"
+            placeholder="you@email.com"
+            {...register('email')}
+            mb="sm"
+            error={errors.email?.message}
+          />
+          <PasswordInput
+            label="Password"
+            placeholder="Create password"
+            {...register('password')}
+            mb="sm"
+            error={errors.password?.message}
+          />
+          <PasswordInput
+            label="Confirm password"
+            placeholder="Repeat password"
+            {...register('confirm')}
             mb="md"
-            error={errors.iban?.message}
+            error={errors.confirm?.message}
           />
           <Group justify="space-between" mb="sm">
             <Button fullWidth type="submit" loading={isSubmitting}>
@@ -118,7 +139,7 @@ export function Register({ onSwitch }: { onSwitch: () => void }) {
             </Button>
           </Group>
           {error && (
-            <Text c="red" ta="center">
+            <Text c="red" ta="center" size="sm" mb="xs">
               {error}
             </Text>
           )}

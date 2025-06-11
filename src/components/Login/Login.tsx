@@ -1,14 +1,15 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import {
-  Button,
   TextInput,
   PasswordInput,
+  Button,
   Box,
-  Text,
   Group,
+  Text,
 } from '@mantine/core';
-import { useState } from 'react';
 
 type LoginForm = {
   login: string;
@@ -16,21 +17,33 @@ type LoginForm = {
 };
 
 export function Login({ onSwitch }: { onSwitch: () => void }) {
+  const router = useRouter();
+  const [error, setError] = useState('');
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<LoginForm>();
-  const [error, setError] = useState('');
 
   const onSubmit = async (data: LoginForm) => {
     setError('');
-    const res = await signIn('credentials', {
-      redirect: false,
-      login: data.login,
-      password: data.password,
-    });
-    if (res?.error) setError('Invalid login or password');
+    try {
+      const res = await signIn('credentials', {
+        redirect: false,
+        login: data.login,
+        password: data.password,
+      });
+      if (res?.ok) {
+        router.replace('/dashboard');
+      } else if (res?.error) {
+        setError('Invalid login or password');
+      } else {
+        setError('No response from server');
+      }
+    } catch (e) {
+      setError('Unexpected error');
+      console.error(e);
+    }
   };
 
   return (
@@ -52,6 +65,9 @@ export function Login({ onSwitch }: { onSwitch: () => void }) {
           backgroundColor: 'white',
         }}
       >
+        <Text size="lg" fw={700} mb="md" ta="center">
+          Login
+        </Text>
         <form onSubmit={handleSubmit(onSubmit)}>
           <TextInput
             label="Login"
@@ -72,17 +88,17 @@ export function Login({ onSwitch }: { onSwitch: () => void }) {
               Login
             </Button>
           </Group>
-          {error && (
-            <Text c="red" ta="center">
-              {error}
-            </Text>
-          )}
           <Text size="sm" ta="center">
             Don&apos;t have an account?{' '}
             <Button variant="subtle" size="xs" onClick={onSwitch} type="button">
               Register
             </Button>
           </Text>
+          {error && (
+            <Text c="red" ta="center">
+              {error}
+            </Text>
+          )}
         </form>
       </Box>
     </Box>

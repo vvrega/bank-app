@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './MainLayout.module.css';
 import { Group, Tabs, Text, Box, Burger, Drawer } from '@mantine/core';
 import {
@@ -16,18 +16,27 @@ import { signOut, useSession } from 'next-auth/react';
 
 const MainLayout = () => {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [drawerOpened, setDrawerOpened] = useState(false);
   const isMobile = useMediaQuery(`(max-width: ${768}px)`);
   const [tab, setTab] = useState<string | null>('home');
 
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.replace('/');
+    }
+  }, [status, router]);
+
+  if (status === 'loading') return null;
+  if (status === 'unauthenticated') return null;
+
   if (!session) {
-    router.replace('/');
     return null;
   }
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: '/' });
+    await signOut({ redirect: false });
+    router.replace('/');
   };
 
   const navTabs = (
@@ -94,23 +103,64 @@ const MainLayout = () => {
               mb={27}
             >
               <Text size="16px" fw={700} w={200}>
-                Hello, {session.user?.name}
+                Hello,
+              </Text>
+              <Text size="16px" fw={700} w={200}>
+                {session.user?.name}
               </Text>
             </Group>
-            <Tabs value={tab} onChange={setTab} orientation="vertical">
+            <Tabs
+              value={tab}
+              onChange={setTab}
+              variant="pills"
+              orientation="vertical"
+              color="white"
+            >
               {navTabs}
             </Tabs>
           </Drawer>
         </>
       ) : (
-        <Tabs value={tab} onChange={setTab} className={styles.tabsPanel}>
-          {navTabs}
-        </Tabs>
+        <>
+          <Group
+            display="flex"
+            dir="column"
+            w={200}
+            gap={5}
+            align="flex-start"
+            justify="flex-start"
+            mb={27}
+          >
+            <Text size="16px" fw={700} w={200}>
+              Hello,
+            </Text>
+            <Text size="16px" fw={700} w={200}>
+              {session.user?.name}
+            </Text>
+          </Group>
+          <Tabs
+            value={tab}
+            onChange={setTab}
+            variant="pills"
+            orientation="vertical"
+            color="white"
+          >
+            {navTabs}
+          </Tabs>
+        </>
       )}
       <Box className={styles.panelsBox}>
-        {tab === 'home' && <HomePanel />}
-        {tab === 'stocks' && <div>Stocks panel</div>}
-        {tab === 'settings' && <SettingsPanel />}
+        <Tabs value={tab} onChange={setTab}>
+          <Tabs.Panel value="home" className={styles.tabsPanel}>
+            <HomePanel />
+          </Tabs.Panel>
+          <Tabs.Panel value="stocks" className={styles.tabsPanel}>
+            Stocks tab content
+          </Tabs.Panel>
+          <Tabs.Panel value="settings" className={styles.tabsPanel}>
+            <SettingsPanel />
+          </Tabs.Panel>
+        </Tabs>
       </Box>
     </Box>
   );

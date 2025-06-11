@@ -9,113 +9,149 @@ import {
   Tooltip,
 } from '@mantine/core';
 import { IconCheck, IconCopy } from '@tabler/icons-react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useState, useEffect } from 'react';
 import styles from './SettingsPanel.module.css';
 import sharedStyles from '../HomePanel/HomePanel.module.css';
-import { useSession } from 'next-auth/react';
-import { useState } from 'react';
 
-const passwordSchema = z
-  .string()
-  .min(8, 'Password must be at least 8 characters')
-  .regex(/[A-Z]/, 'Password must contain a capital letter')
-  .regex(/[^A-Za-z0-9]/, 'Password must contain a symbol');
-
-const schema = z
-  .object({
-    currentPassword: z.string().min(1, 'Current password is required'),
-    newPassword: passwordSchema,
-    confirmNewPassword: z.string().min(1, 'Confirm new password is required'),
-  })
-  .refine((data) => data.newPassword === data.confirmNewPassword, {
-    message: "Passwords don't match",
-    path: ['confirmNewPassword'],
-  });
-
-type FormValues = z.infer<typeof schema>;
+function isValidPassword(password: string) {
+  return /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/.test(
+    password
+  );
+}
 
 export const SettingsPanel = () => {
-  const { data: session } = useSession();
+  const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [passwordChanged, setPasswordChanged] = useState(false);
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-    reset,
-  } = useForm<FormValues>({
-    resolver: zodResolver(schema),
-  });
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [iban, setIban] = useState('');
 
-  const iban = session?.user?.iban || '';
+  useEffect(() => {
+    fetch('http://localhost:4000/api/me', { credentials: 'include' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && data.user && data.user.iban) setIban(data.user.iban);
+      });
+  }, []);
 
-  const onSubmit = async (data: FormValues) => {
-    setPasswordChanged(false);
-    const res = await fetch('/api/change-password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        currentPassword: data.currentPassword,
-        newPassword: data.newPassword,
-      }),
-    });
-    if (res.ok) {
-      setPasswordChanged(true);
-      reset();
+  const handleChangePassword = async () => {
+    setPasswordError(null);
+    if (!password || !newPassword || !confirmNewPassword) return;
+    if (!isValidPassword(newPassword)) {
+      setPasswordError(
+        'Password must be at least 8 characters, contain a capital letter and a symbol'
+      );
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setPasswordError("Passwords don't match");
+      return;
+    }
+
+    try {
+      const res = await fetch('http://localhost:4000/api/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          currentPassword: password,
+          newPassword,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setPasswordChanged(true);
+        setTimeout(() => setPasswordChanged(false), 2000);
+        setPassword('');
+        setNewPassword('');
+        setConfirmNewPassword('');
+      } else {
+        setPasswordError(data.error || 'Password change failed');
+      }
+    } catch {
+      setPasswordError('Password change failed');
     }
   };
 
   return (
-    <Box className={styles.settingsContainer}>
-      <Text fw={700} size="lg" mb="md">
-        Settings
-      </Text>
-      <TextInput
-        label="IBAN"
-        value={iban}
-        readOnly
-        rightSection={
-          <CopyButton value={iban}>
-            {({ copied, copy }) => (
-              <Tooltip
-                label={copied ? 'Copied' : 'Copy'}
-                withArrow
-                position="right"
-              >
-                <span onClick={copy}>
-                  {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
-                </span>
-              </Tooltip>
-            )}
-          </CopyButton>
-        }
-        mb="md"
-      />
-      <form onSubmit={handleSubmit(onSubmit)}>
+    <>
+      <Text className={sharedStyles.headerTitle}>Account Settings</Text>
+      <Box
+        className={`${sharedStyles.tabsPanelContainer} ${styles.settingsContainer}`}
+      >
+        <TextInput
+          label="IBAN Number"
+          value={iban}
+          disabled
+          rightSection={
+            <CopyButton value={iban} timeout={1500}>
+              {({ copied, copy }) => (
+                <Tooltip
+                  label={copied ? 'Copied!' : 'Copy'}
+                  withArrow
+                  position="right"
+                >
+                  <Button
+                    variant="subtle"
+                    size="xs"
+                    color={copied ? 'teal' : 'blue'}
+                    onClick={copy}
+                    px={6}
+                  >
+                    {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+                  </Button>
+                </Tooltip>
+              )}
+            </CopyButton>
+          }
+          mb="lg"
+        />
         <PasswordInput
           label="Current password"
-          {...register('currentPassword')}
+          value={password}
+          onChange={(e) => setPassword(e.currentTarget.value)}
           mb="sm"
-          error={errors.currentPassword?.message}
+          required
         />
         <PasswordInput
           label="New password"
-          {...register('newPassword')}
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.currentTarget.value)}
           mb="sm"
-          error={errors.newPassword?.message}
+          required
+          error={
+            newPassword && !isValidPassword(newPassword)
+              ? 'Password must be at least 8 characters, contain a capital letter and a symbol'
+              : undefined
+          }
         />
         <PasswordInput
           label="Confirm new password"
-          {...register('confirmNewPassword')}
+          value={confirmNewPassword}
+          onChange={(e) => setConfirmNewPassword(e.currentTarget.value)}
           mb="md"
-          error={errors.confirmNewPassword?.message}
+          required
+          error={
+            passwordError ||
+            (newPassword &&
+            confirmNewPassword &&
+            newPassword !== confirmNewPassword
+              ? "Passwords don't match"
+              : undefined)
+          }
         />
         <Group justify="center">
           <Button
             className={sharedStyles.actionButton}
-            type="submit"
-            loading={isSubmitting}
+            onClick={handleChangePassword}
+            disabled={
+              !password ||
+              !newPassword ||
+              !confirmNewPassword ||
+              newPassword !== confirmNewPassword ||
+              !isValidPassword(newPassword)
+            }
           >
             Change password
           </Button>
@@ -125,7 +161,7 @@ export const SettingsPanel = () => {
             Password changed successfully!
           </Text>
         )}
-      </form>
-    </Box>
+      </Box>
+    </>
   );
 };

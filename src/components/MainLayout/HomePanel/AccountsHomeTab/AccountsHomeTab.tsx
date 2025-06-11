@@ -9,6 +9,7 @@ import {
   IconTransferOut,
   IconSend,
   IconArrowsExchange,
+  IconReplace,
 } from '@tabler/icons-react';
 import { AccountActionModal } from '@/components/Modals/AccountActionModal';
 import { ChangeAccountModal } from '@/components/Modals/ChangeAccountModal';
@@ -76,44 +77,88 @@ export const AccountsHomeTab = () => {
   };
 
   return (
-    <Box className={styles.mainContainer}>
-      <Group className={styles.actionButtonsGroup}>
-        <Button
-          className={sharedStyles.actionButton}
-          variant="light"
-          size="xs"
-          leftSection={<IconPlus size={14} />}
-          onClick={() => setDepositOpened(true)}
+    <Box
+      className={`${sharedStyles.tabsPanelContainer} ${styles.mainContainer}`}
+    >
+      {/* Saldo i zmiana konta */}
+      <Box>
+        <Group
+          className={styles.balanceContainer}
+          w="100%"
+          justify="space-between"
+          align="center"
+          gap={0}
         >
-          Deposit
-        </Button>
-        <Button
-          className={sharedStyles.actionButton}
-          variant="light"
-          size="xs"
-          leftSection={<IconTransferOut size={14} />}
-          onClick={() => setWithdrawOpened(true)}
-        >
-          Withdraw
-        </Button>
-        <Button
-          className={sharedStyles.actionButton}
-          variant="light"
-          size="xs"
-          leftSection={<IconArrowsExchange size={14} />}
-        >
-          Exchange
-        </Button>
-        <Button
-          className={sharedStyles.actionButton}
-          variant="light"
-          size="xs"
-          leftSection={<IconSend size={14} />}
-          onClick={() => setTransferOpened(true)}
-        >
-          Transfer
-        </Button>
-      </Group>
+          <Text size="40px" fw={700} mt="lg" ml="lg">
+            {selectedAccount ? (
+              <>
+                {Number(selectedAccount.balance).toFixed(2)}{' '}
+                <span style={{ fontSize: '24px' }}>
+                  {selectedAccount.currency}
+                </span>
+              </>
+            ) : (
+              ''
+            )}
+          </Text>
+          <Button
+            leftSection={<IconReplace size={14} />}
+            className={sharedStyles.stringButton}
+            size="md"
+            onClick={() => setChangeAccOpened(true)}
+          >
+            Change account
+          </Button>
+        </Group>
+        <Text className={styles.currencyDescription}>
+          {selectedAccount
+            ? {
+                PLN: 'Polish Zloty',
+                USD: 'US Dollar',
+                EUR: 'Euro',
+                GBP: 'British Pound',
+              }[selectedAccount.currency as Currency]
+            : ''}
+        </Text>
+        <Group className={styles.actionButtonsGroup}>
+          <Button
+            className={sharedStyles.actionButton}
+            variant="light"
+            size="xs"
+            leftSection={<IconPlus size={14} />}
+            onClick={() => setDepositOpened(true)}
+          >
+            Deposit
+          </Button>
+          <Button
+            className={sharedStyles.actionButton}
+            variant="light"
+            size="xs"
+            leftSection={<IconTransferOut size={14} />}
+            onClick={() => setWithdrawOpened(true)}
+          >
+            Withdraw
+          </Button>
+          <Button
+            className={sharedStyles.actionButton}
+            variant="light"
+            size="xs"
+            leftSection={<IconArrowsExchange size={14} />}
+          >
+            Exchange
+          </Button>
+          <Button
+            className={sharedStyles.actionButton}
+            variant="light"
+            size="xs"
+            leftSection={<IconSend size={14} />}
+            onClick={() => setTransferOpened(true)}
+          >
+            Transfer
+          </Button>
+        </Group>
+      </Box>
+      {/* Transakcje */}
       <Box>
         <Text ml="lg" mt="xl" size="14px">
           Transactions
@@ -131,6 +176,7 @@ export const AccountsHomeTab = () => {
           </Box>
         </ScrollArea>
       </Box>
+      {/* Modale */}
       <AccountActionModal
         opened={depositOpened}
         onClose={() => setDepositOpened(false)}

@@ -1,28 +1,14 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { getServerSession } from 'next-auth';
+import { redirect } from 'next/navigation';
 import MainLayout from '@/components/MainLayout/MainLayout';
+import { authOptions } from '@/lib/auth';
 
-export default function Dashboard() {
-  const router = useRouter();
-  const [checking, setChecking] = useState(true);
+export default async function Dashboard() {
+  const session = await getServerSession(authOptions);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const res = await fetch('http://localhost:4000/api/me', {
-        credentials: 'include',
-      });
-      if (!res.ok) {
-        router.replace('/');
-      } else {
-        setChecking(false);
-      }
-    };
-    checkAuth();
-  }, [router]);
-
-  if (checking) return null;
+  if (!session) {
+    redirect('/');
+  }
 
   return (
     <main>
