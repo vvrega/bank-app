@@ -1,58 +1,32 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Box, Text, Group, Button } from '@mantine/core';
 import styles from './ContactsHomeTab.module.css';
 import sharedStyles from '../HomePanel.module.css';
 import { IconPlus } from '@tabler/icons-react';
 import { ContactList } from './ContactList/ContactList';
 import { AddContactModal } from '@/components/Modals/AddContactModal';
-
-export interface Contact {
-  id: number;
-  name: string;
-  contactUserIban: string;
-  contactUserId: number;
-  contactUser?: {
-    firstName: string;
-    lastName: string;
-  };
-}
-
-export interface Account {
-  id: number;
-  userId: number;
-  currency: string;
-  balance: number;
-}
+import { useQuery } from '@tanstack/react-query';
 
 export const ContactsHomeTab = () => {
   const [modalOpened, setModalOpened] = useState(false);
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [accounts, setAccounts] = useState<Account[]>([]);
 
-  const fetchContacts = async () => {
-    const res = await fetch('http://localhost:4000/api/contacts', {
-      credentials: 'include',
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setContacts(data.contacts);
-    }
-  };
+  const { data: contacts = [], refetch: refetchContacts } = useQuery({
+    queryKey: ['contacts'],
+    queryFn: async () => {
+      const res = await fetch('/api/contacts');
+      if (!res.ok) throw new Error('Failed to fetch contacts');
+      return res.json();
+    },
+  });
 
-  const fetchAccounts = async () => {
-    const res = await fetch('http://localhost:4000/api/accounts', {
-      credentials: 'include',
-    });
-    if (res.ok) {
-      const data = await res.json();
-      setAccounts(data.accounts);
-    }
-  };
-
-  useEffect(() => {
-    fetchContacts();
-    fetchAccounts();
-  }, []);
+  const { data: accounts = [] } = useQuery({
+    queryKey: ['accounts'],
+    queryFn: async () => {
+      const res = await fetch('/api/accounts');
+      if (!res.ok) throw new Error('Failed to fetch accounts');
+      return res.json();
+    },
+  });
 
   return (
     <Box
@@ -79,7 +53,7 @@ export const ContactsHomeTab = () => {
       <AddContactModal
         opened={modalOpened}
         onClose={() => setModalOpened(false)}
-        onContactAdded={fetchContacts}
+        onContactAdded={() => refetchContacts()}
       />
     </Box>
   );

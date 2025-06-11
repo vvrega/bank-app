@@ -1,4 +1,6 @@
 import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { signIn } from 'next-auth/react';
 import {
   Button,
@@ -10,21 +12,29 @@ import {
 } from '@mantine/core';
 import { useState } from 'react';
 
-type RegisterForm = {
-  login: string;
-  password: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  iban: string;
-};
+const schema = z.object({
+  login: z.string().min(1, 'Login is required'),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Password must contain a capital letter')
+    .regex(/[^A-Za-z0-9]/, 'Password must contain a symbol'),
+  email: z.string().email('Invalid email address'),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  iban: z.string().optional(),
+});
+
+type RegisterForm = z.infer<typeof schema>;
 
 export function Register({ onSwitch }: { onSwitch: () => void }) {
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<RegisterForm>();
+  } = useForm<RegisterForm>({
+    resolver: zodResolver(schema),
+  });
   const [error, setError] = useState('');
 
   const onSubmit = async (data: RegisterForm) => {
@@ -68,32 +78,47 @@ export function Register({ onSwitch }: { onSwitch: () => void }) {
         <form onSubmit={handleSubmit(onSubmit)}>
           <TextInput
             label="Login"
-            {...register('login', { required: true })}
+            {...register('login')}
             mb="sm"
-            error={errors.login && 'Login is required'}
+            error={errors.login?.message}
           />
           <PasswordInput
             label="Password"
-            {...register('password', { required: true })}
+            {...register('password')}
             mb="sm"
-            error={errors.password && 'Password is required'}
+            error={errors.password?.message}
           />
           <TextInput
             label="Email"
-            {...register('email', { required: true })}
+            {...register('email')}
             mb="sm"
-            error={errors.email && 'Email is required'}
+            error={errors.email?.message}
           />
-          <TextInput label="First Name" {...register('firstName')} mb="sm" />
-          <TextInput label="Last Name" {...register('lastName')} mb="sm" />
-          <TextInput label="IBAN" {...register('iban')} mb="md" />
+          <TextInput
+            label="First Name"
+            {...register('firstName')}
+            mb="sm"
+            error={errors.firstName?.message}
+          />
+          <TextInput
+            label="Last Name"
+            {...register('lastName')}
+            mb="sm"
+            error={errors.lastName?.message}
+          />
+          <TextInput
+            label="IBAN"
+            {...register('iban')}
+            mb="md"
+            error={errors.iban?.message}
+          />
           <Group justify="space-between" mb="sm">
             <Button fullWidth type="submit" loading={isSubmitting}>
               Register
             </Button>
           </Group>
           {error && (
-            <Text color="red" ta="center">
+            <Text c="red" ta="center">
               {error}
             </Text>
           )}

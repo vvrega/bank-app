@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import styles from './MainLayout.module.css';
 import { Group, Tabs, Text, Box, Burger, Drawer } from '@mantine/core';
 import {
@@ -12,35 +12,22 @@ import { HomePanel } from './HomePanel/HomePanel';
 import { SettingsPanel } from './SettingsPanel/SettingsPanel';
 import { useRouter } from 'next/navigation';
 import { useMediaQuery } from '@mantine/hooks';
+import { signOut, useSession } from 'next-auth/react';
 
 const MainLayout = () => {
   const router = useRouter();
-  const [user, setUser] = useState<{
-    firstname: string;
-    lastname: string;
-  } | null>(null);
+  const { data: session } = useSession();
   const [drawerOpened, setDrawerOpened] = useState(false);
   const isMobile = useMediaQuery(`(max-width: ${768}px)`);
   const [tab, setTab] = useState<string | null>('home');
 
-  useEffect(() => {
-    fetch('http://localhost:4000/api/me', { credentials: 'include' })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data && data.user)
-          setUser({
-            firstname: data.user.firstName,
-            lastname: data.user.lastName,
-          });
-      });
-  }, []);
+  if (!session) {
+    router.replace('/');
+    return null;
+  }
 
   const handleLogout = async () => {
-    await fetch('http://localhost:4000/api/logout', {
-      method: 'POST',
-      credentials: 'include',
-    });
-    router.push('/');
+    await signOut({ callbackUrl: '/' });
   };
 
   const navTabs = (
@@ -107,65 +94,23 @@ const MainLayout = () => {
               mb={27}
             >
               <Text size="16px" fw={700} w={200}>
-                Hello,
-              </Text>
-              <Text size="16px" fw={700} w={200}>
-                {user ? `${user.firstname} ${user.lastname}!` : 'Loading...'}
+                Hello, {session.user?.name}
               </Text>
             </Group>
-            <Tabs
-              value={tab}
-              onChange={setTab}
-              variant="pills"
-              orientation="vertical"
-              color="white"
-            >
+            <Tabs value={tab} onChange={setTab} orientation="vertical">
               {navTabs}
             </Tabs>
           </Drawer>
         </>
       ) : (
-        <Group w={200} display="flex" dir="column" align="flex-start">
-          <Group
-            display="flex"
-            dir="column"
-            w={200}
-            gap={5}
-            align="flex-start"
-            justify="flex-start"
-            mb={27}
-          >
-            <Text size="16px" fw={700} w={200}>
-              Hello,
-            </Text>
-            <Text size="16px" fw={700} w={200}>
-              {user ? `${user.firstname} ${user.lastname}!` : 'Loading...'}
-            </Text>
-          </Group>
-          <Tabs
-            value={tab}
-            onChange={setTab}
-            variant="pills"
-            orientation="vertical"
-            color="white"
-          >
-            {navTabs}
-          </Tabs>
-        </Group>
-      )}
-
-      <Box className={styles.panelsBox}>
-        <Tabs value={tab} onChange={setTab}>
-          <Tabs.Panel value="home" className={styles.tabsPanel}>
-            <HomePanel />
-          </Tabs.Panel>
-          <Tabs.Panel value="stocks" className={styles.tabsPanel}>
-            Stocks tab content
-          </Tabs.Panel>
-          <Tabs.Panel value="settings" className={styles.tabsPanel}>
-            <SettingsPanel />
-          </Tabs.Panel>
+        <Tabs value={tab} onChange={setTab} className={styles.tabsPanel}>
+          {navTabs}
         </Tabs>
+      )}
+      <Box className={styles.panelsBox}>
+        {tab === 'home' && <HomePanel />}
+        {tab === 'stocks' && <div>Stocks panel</div>}
+        {tab === 'settings' && <SettingsPanel />}
       </Box>
     </Box>
   );

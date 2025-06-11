@@ -25,11 +25,9 @@ export const HomePanel = () => {
             Contacts
           </Tabs.Tab>
         </Tabs.List>
-
         <Tabs.Panel value="accounts">
           <AccountsHomeTab />
         </Tabs.Panel>
-
         <Tabs.Panel value="contacts">
           <ContactsHomeTab />
         </Tabs.Panel>
