@@ -10,6 +10,7 @@ import {
   Group,
 } from '@mantine/core';
 import { useState } from 'react';
+import { useRegister } from '@/hooks/api/useRegister';
 
 const schema = z
   .object({
@@ -35,37 +36,34 @@ export function Register({ onSwitch }: { onSwitch: () => void }) {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     reset,
   } = useForm<RegisterForm>({
     resolver: zodResolver(schema),
   });
   const [error, setError] = useState('');
 
+  const registerMutation = useRegister();
+
   const onSubmit: SubmitHandler<RegisterForm> = async (data) => {
     setError('');
     try {
-      const res = await fetch('/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          login: data.login,
-          password: data.password,
-          email: data.email,
-          firstName: data.firstName,
-          lastName: data.lastName,
-        }),
+      await registerMutation.mutateAsync({
+        login: data.login,
+        password: data.password,
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
       });
-      if (res.ok) {
-        reset();
-        onSwitch();
+
+      reset();
+      onSwitch();
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
       } else {
-        const result = await res.json();
-        setError(result.error || 'Registration error');
+        setError('Registration failed');
       }
-    } catch (error) {
-      console.error('Registration error:', error);
-      setError('An unexpected error occurred. Please try again.');
     }
   };
 
@@ -135,7 +133,11 @@ export function Register({ onSwitch }: { onSwitch: () => void }) {
             error={errors.confirm?.message}
           />
           <Group justify="space-between" mb="sm">
-            <Button fullWidth type="submit" loading={isSubmitting}>
+            <Button
+              fullWidth
+              type="submit"
+              loading={registerMutation.isPending}
+            >
               Register
             </Button>
           </Group>

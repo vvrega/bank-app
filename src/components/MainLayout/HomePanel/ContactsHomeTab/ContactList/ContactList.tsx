@@ -11,29 +11,12 @@ import {
   Tooltip,
 } from '@mantine/core';
 import { IconCopy, IconCheck } from '@tabler/icons-react';
-import { useSession } from 'next-auth/react';
 
 import sharedStyles from '@/components/MainLayout/HomePanel/HomePanel.module.css';
 import { TransferModal } from '@/components/Modals/TransferModal';
 import { ContactTransactionsModal } from '@/components/Modals/ContactTransactionsModal';
-
-export interface Contact {
-  id: number;
-  name: string;
-  contactUserIban: string;
-  contactUserId: number;
-  contactUser?: {
-    firstName: string;
-    lastName: string;
-  };
-}
-
-interface Account {
-  id: number;
-  userId: number;
-  currency: string;
-  balance: number;
-}
+import { Contact, Account } from '@/types/types';
+import { useUserData } from '@/hooks/api/useUserData';
 
 interface ContactListProps {
   contacts: Contact[];
@@ -44,34 +27,23 @@ export function ContactList({
   contacts = [],
   accounts = [],
 }: ContactListProps) {
-  const { data: session } = useSession();
   const [transferModalOpened, setTransferModalOpened] = useState(false);
   const [transferContact, setTransferContact] = useState<Contact | null>(null);
   const [historyModalOpened, setHistoryModalOpened] = useState(false);
   const [historyContact, setHistoryContact] = useState<Contact | null>(null);
   const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
+  const { data: userData } = useUserData();
+
   useEffect(() => {
     if (accounts.length > 0 && accounts[0].userId) {
       setCurrentUserId(accounts[0].userId);
+    } else if (userData && userData.user && userData.user.id) {
+      setCurrentUserId(userData.user.id);
     } else {
-      fetch('/api/me')
-        .then((res) =>
-          res.ok ? res.json() : Promise.reject('Failed to fetch user data')
-        )
-        .then((data) => {
-          if (data && data.user && data.user.id) {
-            setCurrentUserId(data.user.id);
-          } else {
-            setCurrentUserId(null);
-          }
-        })
-        .catch((err) => {
-          console.error('Error fetching user data:', err);
-          setCurrentUserId(null);
-        });
+      setCurrentUserId(null);
     }
-  }, [accounts, session]);
+  }, [accounts, userData]);
 
   const handleNewTransfer = (contact: Contact) => {
     setTransferContact(contact);

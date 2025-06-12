@@ -1,20 +1,7 @@
 import { useState, useEffect } from 'react';
-import {
-  Modal,
-  Text,
-  Button,
-  Group,
-  TextInput,
-  CloseButton,
-  Paper,
-} from '@mantine/core';
-
-interface Account {
-  id: number;
-  userId: number;
-  currency: string;
-  balance: number;
-}
+import { Modal, Text, Button, Group, TextInput, Paper } from '@mantine/core';
+import { Account } from '@/types/types';
+import { useTransfer } from '@/hooks/api/useTransfer';
 
 interface TransferModalProps {
   opened: boolean;
@@ -41,7 +28,7 @@ export function TransferModal({
   const [title, setTitle] = useState('');
   const [name, setName] = useState(initialName);
   const [error, setError] = useState<string | null>(null);
-  const [checking, setChecking] = useState(false);
+  const transfer = useTransfer();
 
   useEffect(() => {
     if (opened) {
@@ -76,37 +63,27 @@ export function TransferModal({
       return;
     }
 
-    setChecking(true);
-
     try {
-      const res = await fetch('/api/transfer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fromCurrency: selectedCurrency,
-          amount: value,
-          iban,
-          title,
-          name,
-        }),
+      await transfer.mutateAsync({
+        fromCurrency: selectedCurrency,
+        amount: value,
+        iban,
+        title,
+        name,
       });
 
-      if (res.ok) {
-        setAmount('');
-        setIban(initialIban || '');
-        setTitle('');
-        setName(initialName || '');
-        onClose();
-        if (onSuccess) onSuccess();
-      } else {
-        const data = await res.json();
-        setError(data.error || 'Transfer failed');
-      }
+      setAmount('');
+      setIban(initialIban || '');
+      setTitle('');
+      setName(initialName || '');
+      onClose();
+      if (onSuccess) onSuccess();
     } catch (err) {
-      console.error('Transfer error:', err);
-      setError('Connection error. Please try again later.');
-    } finally {
-      setChecking(false);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Transfer failed');
+      }
     }
   };
 
@@ -179,7 +156,7 @@ export function TransferModal({
           {error}
         </Text>
       )}
-      <Button fullWidth onClick={handleTransfer} loading={checking}>
+      <Button fullWidth onClick={handleTransfer} loading={transfer.isPending}>
         Transfer
       </Button>
     </Modal>

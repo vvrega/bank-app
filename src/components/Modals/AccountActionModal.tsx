@@ -1,12 +1,7 @@
 import { useState } from 'react';
-import {
-  Modal,
-  Text,
-  Button,
-  Group,
-  TextInput,
-  CloseButton,
-} from '@mantine/core';
+import { Modal, Text, Button, Group, TextInput } from '@mantine/core';
+import { useDeposit } from '@/hooks/api/useDeposit';
+import { useWithdraw } from '@/hooks/api/useWithdraw';
 
 interface AccountActionModalProps {
   opened: boolean;
@@ -31,6 +26,8 @@ export function AccountActionModal({
 }: AccountActionModalProps) {
   const [amount, setAmount] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const deposit = useDeposit();
+  const withdraw = useWithdraw();
 
   const minAmount =
     currency === 'PLN'
@@ -80,27 +77,22 @@ export function AccountActionModal({
       return;
     }
 
-    const endpoint =
-      submitLabel === 'Withdraw' ? '/api/withdraw' : '/api/deposit';
-
     try {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: value, currency }),
-      });
-
-      if (res.ok) {
-        setAmount('');
-        onClose();
-        if (onSuccess) onSuccess();
+      if (submitLabel === 'Withdraw') {
+        await withdraw.mutateAsync({ amount: value, currency });
       } else {
-        const data = await res.json();
-        setError(data.error || 'Operation failed');
+        await deposit.mutateAsync({ amount: value, currency });
       }
+
+      setAmount('');
+      onClose();
+      if (onSuccess) onSuccess();
     } catch (err) {
-      console.error('Operation error:', err);
-      setError('Connection error. Please try again later.');
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Operation failed');
+      }
     }
   };
 
@@ -145,7 +137,11 @@ export function AccountActionModal({
           {error}
         </Text>
       )}
-      <Button fullWidth onClick={handleSubmit}>
+      <Button
+        fullWidth
+        onClick={handleSubmit}
+        loading={withdraw.isPending || deposit.isPending}
+      >
         {submitLabel}
       </Button>
     </Modal>

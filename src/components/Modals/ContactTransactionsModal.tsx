@@ -1,24 +1,7 @@
-import { useState, useEffect } from 'react';
-import {
-  Modal,
-  Text,
-  Group,
-  ScrollArea,
-  Loader,
-  Box,
-  CloseButton,
-} from '@mantine/core';
-import {
-  TransactionHistoryItem,
-  Transaction,
-} from '../MainLayout/HomePanel/AccountsHomeTab/TransactionHistoryItem/TransactionHistoryItem';
-
-interface Account {
-  id: number;
-  userId: number;
-  currency: string;
-  balance: number;
-}
+import { Modal, Text, Group, ScrollArea, Loader, Box } from '@mantine/core';
+import { Transaction, Account } from '@/types/types';
+import { TransactionHistoryItem } from '../MainLayout/HomePanel/AccountsHomeTab/TransactionHistoryItem/TransactionHistoryItem';
+import { useContactTransactions } from '@/hooks/api/useTransactions';
 
 interface ContactTransactionsModalProps {
   opened: boolean;
@@ -35,37 +18,8 @@ export function ContactTransactionsModal({
   accounts,
   currentUserId,
 }: ContactTransactionsModalProps) {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const fetchContactTransactions = async () => {
-      if (!opened) return;
-
-      setLoading(true);
-
-      try {
-        const res = await fetch(
-          `/api/transactions?contactUserId=${contactUserId}`
-        );
-
-        if (res.ok) {
-          const data = await res.json();
-          setTransactions(data.transactions || []);
-        } else {
-          console.error('Failed to fetch transactions:', await res.text());
-          setTransactions([]);
-        }
-      } catch (err) {
-        console.error('Transaction fetch error:', err);
-        setTransactions([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchContactTransactions();
-  }, [opened, contactUserId]);
+  const { data, isLoading } = useContactTransactions(contactUserId, opened);
+  const transactions = data?.transactions || [];
 
   return (
     <Modal
@@ -78,7 +32,7 @@ export function ContactTransactionsModal({
       radius="md"
       overlayProps={{ blur: 2 }}
     >
-      {loading ? (
+      {isLoading ? (
         <Group justify="center" p="xl">
           <Loader />
         </Group>

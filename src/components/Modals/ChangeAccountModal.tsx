@@ -1,4 +1,4 @@
-import { Modal, Text, Paper, Group, Box, CloseButton } from '@mantine/core';
+import { Modal, Text, Paper, Group, Box } from '@mantine/core';
 
 type Currency = 'PLN' | 'USD' | 'EUR' | 'GBP';
 

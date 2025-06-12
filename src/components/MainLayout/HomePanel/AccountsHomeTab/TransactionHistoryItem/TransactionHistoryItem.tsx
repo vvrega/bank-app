@@ -5,25 +5,7 @@ import {
   IconSend,
   IconArrowsExchange,
 } from '@tabler/icons-react';
-
-export type TransactionType = 'Deposit' | 'Withdraw' | 'Transfer' | 'Exchange';
-
-export interface Transaction {
-  id: string | number;
-  type: TransactionType;
-  amount: number;
-  currency: string;
-  date: string;
-  description?: string;
-  targetCurrency?: string;
-  targetUser?: string;
-  fromAccountId?: number;
-  toAccountId?: number;
-  fromUserName?: string;
-  toUserName?: string;
-  fromAccountUserId?: number;
-  toAccountUserId?: number;
-}
+import { Transaction, TransactionType } from '@/types/types';
 
 interface Account {
   id: number;

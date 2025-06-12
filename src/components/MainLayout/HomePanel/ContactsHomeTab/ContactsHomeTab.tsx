@@ -1,35 +1,22 @@
-import { useState } from 'react';
 import { Box, Text, Group, Button } from '@mantine/core';
 import styles from './ContactsHomeTab.module.css';
 import sharedStyles from '../HomePanel.module.css';
 import { IconPlus } from '@tabler/icons-react';
 import { ContactList } from './ContactList/ContactList';
 import { AddContactModal } from '@/components/Modals/AddContactModal';
-import { useQuery } from '@tanstack/react-query';
+import { useModal } from '@/hooks/useModal';
+import { useContacts } from '@/hooks/api/useContacts';
+import { useAccounts } from '@/hooks/api/useAccounts';
 
 export const ContactsHomeTab = () => {
-  const [modalOpened, setModalOpened] = useState(false);
+  const contactModal = useModal();
 
-  const { data: contactsData, refetch: refetchContacts } = useQuery({
-    queryKey: ['contacts'],
-    queryFn: async () => {
-      const res = await fetch('/api/contacts');
-      if (!res.ok) throw new Error('Failed to fetch contacts');
-      return res.json();
-    },
-  });
-
-  const { data: accountsData = [] } = useQuery({
-    queryKey: ['accounts'],
-    queryFn: async () => {
-      const res = await fetch('/api/accounts');
-      if (!res.ok) throw new Error('Failed to fetch accounts');
-      return res.json();
-    },
-  });
+  const { data: contactsData = { contacts: [] }, refetch: refetchContacts } =
+    useContacts();
+  const { data: accountsData = [] } = useAccounts();
 
   const contacts = contactsData?.contacts || [];
-  const accounts = accountsData?.accounts || accountsData || [];
+  const accounts = accountsData || [];
 
   return (
     <Box
@@ -45,7 +32,7 @@ export const ContactsHomeTab = () => {
           mt="lg"
           leftSection={<IconPlus size={14} />}
           className={sharedStyles.actionButton}
-          onClick={() => setModalOpened(true)}
+          onClick={contactModal.open}
         >
           Add new
         </Button>
@@ -54,9 +41,9 @@ export const ContactsHomeTab = () => {
         <ContactList contacts={contacts} accounts={accounts} />
       </Box>
       <AddContactModal
-        opened={modalOpened}
-        onClose={() => setModalOpened(false)}
-        onContactAdded={() => refetchContacts()}
+        opened={contactModal.isOpen}
+        onClose={contactModal.close}
+        onContactAdded={refetchContacts}
       />
     </Box>
   );

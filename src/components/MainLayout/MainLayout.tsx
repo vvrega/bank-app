@@ -12,11 +12,12 @@ import { HomePanel } from './HomePanel/HomePanel';
 import { SettingsPanel } from './SettingsPanel/SettingsPanel';
 import { useRouter } from 'next/navigation';
 import { useMediaQuery } from '@mantine/hooks';
-import { signOut, useSession } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
+import { useAuthSession } from '@/hooks/api/useAuthSession';
 
 const MainLayout = () => {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session, status } = useAuthSession();
   const [drawerOpened, setDrawerOpened] = useState(false);
   const isMobile = useMediaQuery(`(max-width: ${768}px)`);
   const [tab, setTab] = useState<string | null>('home');

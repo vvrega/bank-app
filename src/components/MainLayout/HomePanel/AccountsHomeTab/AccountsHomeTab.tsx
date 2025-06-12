@@ -1,9 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import {
-  TransactionHistoryItem,
-  Transaction,
-} from './TransactionHistoryItem/TransactionHistoryItem';
+import { TransactionHistoryItem } from './TransactionHistoryItem/TransactionHistoryItem';
 import { Box, Button, Group, ScrollArea, Text } from '@mantine/core';
 import styles from './AccountsHomeTab.module.css';
 import sharedStyles from '../HomePanel.module.css';
@@ -19,16 +15,9 @@ import { ChangeAccountModal } from '@/components/Modals/ChangeAccountModal';
 import { TransferModal } from '@/components/Modals/TransferModal';
 import { useSession } from 'next-auth/react';
 import { useModal } from '@/hooks/useModal';
-
-export type Currency = 'PLN' | 'USD' | 'EUR' | 'GBP';
-
-interface Account {
-  id: number;
-  name: string;
-  balance: number;
-  currency: Currency;
-  userId: number;
-}
+import { useAccounts } from '@/hooks/api/useAccounts';
+import { useTransactions } from '@/hooks/api/useTransactions';
+import { Currency, Account, Transaction } from '@/types/types';
 
 export const AccountsHomeTab = () => {
   const { data: session } = useSession();
@@ -42,27 +31,12 @@ export const AccountsHomeTab = () => {
     Currency | undefined
   >(undefined);
 
-  const { data: accountsData = [], refetch: refetchAccounts } = useQuery({
-    queryKey: ['accounts'],
-    queryFn: async () => {
-      const res = await fetch('/api/accounts');
-      if (!res.ok) throw new Error('Failed to fetch accounts');
-      return res.json();
-    },
-  });
+  const { data: accountsData = [], refetch: refetchAccounts } = useAccounts();
 
   const {
     data: transactionsData = { transactions: [] },
     refetch: refetchTransactions,
-  } = useQuery({
-    queryKey: ['transactions'],
-    queryFn: async () => {
-      const res = await fetch('/api/transactions');
-      if (!res.ok) throw new Error('Failed to fetch transactions');
-      return res.json();
-    },
-    enabled: !!accountsData.length,
-  });
+  } = useTransactions(!!accountsData.length);
 
   const transactions = Array.isArray(transactionsData.transactions)
     ? transactionsData.transactions
@@ -87,7 +61,7 @@ export const AccountsHomeTab = () => {
 
   useEffect(() => {
     if (!selectedCurrency && accounts.length) {
-      setSelectedCurrency(accounts[0].currency);
+      setSelectedCurrency(accounts[0].currency as Currency);
     }
   }, [accounts, selectedCurrency]);
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+
 import {
   TextInput,
   PasswordInput,
@@ -19,6 +20,7 @@ type LoginForm = {
 export function Login({ onSwitch }: { onSwitch: () => void }) {
   const router = useRouter();
   const [error, setError] = useState('');
+
   const {
     register,
     handleSubmit,

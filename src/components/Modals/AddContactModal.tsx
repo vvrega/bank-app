@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Modal, TextInput, Button, Text, Group } from '@mantine/core';
+import { useAddContact } from '@/hooks/api/useAddContact';
 
 interface AddContactModalProps {
   opened: boolean;
@@ -15,34 +16,29 @@ export function AddContactModal({
   const [name, setName] = useState('');
   const [iban, setIban] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+
+  const addContact = useAddContact();
 
   const handleAdd = async () => {
     setError(null);
-    setLoading(true);
+
+    if (!name || !iban) {
+      setError('Please fill in all fields');
+      return;
+    }
 
     try {
-      const res = await fetch('/api/contacts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, iban }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setName('');
-        setIban('');
-        onContactAdded();
-        onClose();
-      } else {
-        setError(data.error || 'Failed to add contact');
-      }
+      await addContact.mutateAsync({ name, iban });
+      setName('');
+      setIban('');
+      onContactAdded();
+      onClose();
     } catch (err) {
-      console.error('Add contact error:', err);
-      setError('Connection error. Please try again later.');
-    } finally {
-      setLoading(false);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Failed to add contact');
+      }
     }
   };
 
@@ -68,7 +64,11 @@ export function AddContactModal({
         </Text>
       )}
       <Group justify="flex-end">
-        <Button onClick={handleAdd} loading={loading} disabled={!name || !iban}>
+        <Button
+          onClick={handleAdd}
+          loading={addContact.isPending}
+          disabled={!name || !iban}
+        >
           Add contact
         </Button>
       </Group>

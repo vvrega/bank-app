@@ -9,13 +9,14 @@ import {
   Tooltip,
 } from '@mantine/core';
 import { IconCheck, IconCopy } from '@tabler/icons-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useSession } from 'next-auth/react';
 import styles from './SettingsPanel.module.css';
 import sharedStyles from '../HomePanel/HomePanel.module.css';
+import { useUserData } from '@/hooks/api/useUserData';
+import { useChangePassword } from '@/hooks/api/useChangePassword';
 
 const passwordSchema = z
   .object({
@@ -38,10 +39,10 @@ const passwordSchema = z
 type PasswordFormData = z.infer<typeof passwordSchema>;
 
 export const SettingsPanel = () => {
-  const { data: session } = useSession();
-  const [iban, setIban] = useState('');
   const [passwordChanged, setPasswordChanged] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { data: userData } = useUserData();
+  const changePassword = useChangePassword();
 
   const {
     register,
@@ -54,55 +55,30 @@ export const SettingsPanel = () => {
     mode: 'onChange',
   });
 
-  useEffect(() => {
-    if (session?.user) {
-      fetch('/api/me')
-        .then((res) =>
-          res.ok
-            ? res.json()
-            : Promise.reject(new Error('Failed to fetch user data'))
-        )
-        .then((data) => {
-          if (data.user && data.user.iban) setIban(data.user.iban);
-        })
-        .catch((err) => {
-          console.error('Error fetching user data:', err);
-        });
-    }
-  }, [session]);
-
   const onSubmit = async (data: PasswordFormData) => {
     try {
       setError(null);
 
-      const res = await fetch('/api/change-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          currentPassword: data.currentPassword,
-          newPassword: data.newPassword,
-        }),
+      await changePassword.mutateAsync({
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
       });
 
-      if (res.ok) {
-        setPasswordChanged(true);
-        setTimeout(() => setPasswordChanged(false), 2000);
-        reset();
+      setPasswordChanged(true);
+      setTimeout(() => setPasswordChanged(false), 2000);
+      reset();
+    } catch (err) {
+      if (
+        err instanceof Error &&
+        err.message === 'Current password is incorrect'
+      ) {
+        setFormError('currentPassword', {
+          type: 'manual',
+          message: 'Current password is incorrect',
+        });
       } else {
-        const errorData = await res.json();
-
-        if (errorData.error === 'Current password is incorrect') {
-          setFormError('currentPassword', {
-            type: 'manual',
-            message: 'Current password is incorrect',
-          });
-        } else {
-          setError(errorData.error || 'Password change failed');
-        }
+        setError('Password change failed. Please try again.');
       }
-    } catch (error) {
-      setError('Password change failed. Please try again.');
-      console.error('Password change failed', error);
     }
   };
 
@@ -114,10 +90,10 @@ export const SettingsPanel = () => {
       >
         <TextInput
           label="IBAN Number"
-          value={iban}
+          value={userData?.user?.iban || ''}
           disabled
           rightSection={
-            <CopyButton value={iban} timeout={1500}>
+            <CopyButton value={userData?.user?.iban || ''} timeout={1500}>
               {({ copied, copy }) => (
                 <Tooltip
                   label={copied ? 'Copied!' : 'Copy'}
@@ -171,6 +147,7 @@ export const SettingsPanel = () => {
               className={sharedStyles.actionButton}
               type="submit"
               disabled={!isValid}
+              loading={changePassword.isPending}
             >
               Change password
             </Button>
