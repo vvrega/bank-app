@@ -13,7 +13,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useSession } from 'next-auth/react'; // Dodanie useSession
+import { useSession } from 'next-auth/react';
 import styles from './SettingsPanel.module.css';
 import sharedStyles from '../HomePanel/HomePanel.module.css';
 

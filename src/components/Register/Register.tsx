@@ -1,7 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { signIn } from 'next-auth/react';
 import {
   Button,
   TextInput,
@@ -45,26 +44,28 @@ export function Register({ onSwitch }: { onSwitch: () => void }) {
 
   const onSubmit = async (data: RegisterForm) => {
     setError('');
-    const res = await fetch('/api/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        login: data.login,
-        password: data.password,
-        email: data.email,
-        firstName: data.firstName,
-        lastName: data.lastName,
-      }),
-    });
-    if (res.ok) {
-      await signIn('credentials', {
-        redirect: false,
-        login: data.login,
-        password: data.password,
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          login: data.login,
+          password: data.password,
+          email: data.email,
+          firstName: data.firstName,
+          lastName: data.lastName,
+        }),
       });
-    } else {
-      const result = await res.json();
-      setError(result.error || 'Registration error');
+      if (res.ok) {
+        reset();
+        onSwitch();
+      } else {
+        const result = await res.json();
+        setError(result.error || 'Registration error');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      setError('An unexpected error occurred. Please try again.');
     }
   };
 
