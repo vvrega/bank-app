@@ -1,4 +1,4 @@
-import { useForm } from 'react-hook-form';
+import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -42,7 +42,7 @@ export function Register({ onSwitch }: { onSwitch: () => void }) {
   });
   const [error, setError] = useState('');
 
-  const onSubmit = async (data: RegisterForm) => {
+  const onSubmit: SubmitHandler<RegisterForm> = async (data) => {
     setError('');
     try {
       const res = await fetch('/api/register', {

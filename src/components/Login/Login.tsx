@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { SubmitHandler, useForm } from 'react-hook-form';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
@@ -25,7 +25,7 @@ export function Login({ onSwitch }: { onSwitch: () => void }) {
     formState: { errors, isSubmitting },
   } = useForm<LoginForm>();
 
-  const onSubmit = async (data: LoginForm) => {
+  const onSubmit: SubmitHandler<LoginForm> = async (data) => {
     setError('');
     try {
       const res = await signIn('credentials', {
