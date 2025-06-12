@@ -113,20 +113,14 @@ export function TransferModal({
   return (
     <Modal
       opened={opened}
+      title="Transfer"
       onClose={onClose}
       centered
-      withCloseButton={false}
       padding="lg"
       radius="md"
       size="sm"
       overlayProps={{ blur: 2 }}
     >
-      <Group justify="space-between" align="center" mb="md">
-        <Text size="lg" fw={700}>
-          Transfer
-        </Text>
-        <CloseButton onClick={onClose} />
-      </Group>
       <Text fw={500} mb="xs">
         Select account
       </Text>

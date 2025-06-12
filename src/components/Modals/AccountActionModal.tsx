@@ -106,21 +106,15 @@ export function AccountActionModal({
 
   return (
     <Modal
+      title={title}
       opened={opened}
       onClose={onClose}
       centered
-      withCloseButton={false}
       padding="lg"
       radius="md"
       size="sm"
       overlayProps={{ blur: 2 }}
     >
-      <Group justify="space-between" align="center" mb="md">
-        <Text size="lg" fw={700}>
-          {title}
-        </Text>
-        <CloseButton onClick={onClose} />
-      </Group>
       <TextInput
         label="Amount"
         placeholder={`Enter amount in ${currency}`}

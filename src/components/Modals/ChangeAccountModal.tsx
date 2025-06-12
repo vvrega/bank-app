@@ -25,20 +25,14 @@ export function ChangeAccountModal({
   return (
     <Modal
       opened={opened}
+      title="Change account"
       onClose={onClose}
       centered
-      withCloseButton={false}
       padding="lg"
       radius="md"
       size="xs"
       overlayProps={{ blur: 2 }}
     >
-      <Group justify="space-between" align="center" mb="md">
-        <Text size="lg" fw={700}>
-          Change account
-        </Text>
-        <CloseButton onClick={onClose} />
-      </Group>
       <Box>
         {accounts.map((acc) => (
           <Paper

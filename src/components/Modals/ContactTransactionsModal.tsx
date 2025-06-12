@@ -70,21 +70,14 @@ export function ContactTransactionsModal({
   return (
     <Modal
       opened={opened}
+      title="Transaction history"
       onClose={onClose}
       centered
-      withCloseButton={false}
       size="lg"
       padding="lg"
       radius="md"
       overlayProps={{ blur: 2 }}
     >
-      <Group justify="space-between" align="center" mb="md">
-        <Text size="lg" fw={700}>
-          Transaction history
-        </Text>
-        <CloseButton onClick={onClose} />
-      </Group>
-
       {loading ? (
         <Group justify="center" p="xl">
           <Loader />
