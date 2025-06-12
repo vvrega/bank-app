@@ -20,14 +20,16 @@ export function AddContactModal({
   const handleAdd = async () => {
     setError(null);
     setLoading(true);
+
     try {
-      const res = await fetch('http://localhost:4000/api/contacts', {
+      const res = await fetch('/api/contacts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ name, iban }),
       });
+
       const data = await res.json();
+
       if (res.ok) {
         setName('');
         setIban('');
@@ -36,8 +38,9 @@ export function AddContactModal({
       } else {
         setError(data.error || 'Failed to add contact');
       }
-    } catch {
-      setError('Failed to add contact');
+    } catch (err) {
+      console.error('Add contact error:', err);
+      setError('Connection error. Please try again later.');
     } finally {
       setLoading(false);
     }

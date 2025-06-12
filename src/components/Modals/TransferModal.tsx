@@ -11,6 +11,7 @@ import {
 
 interface Account {
   id: number;
+  userId: number;
   currency: string;
   balance: number;
 }
@@ -57,6 +58,7 @@ export function TransferModal({
   const handleTransfer = async () => {
     setError(null);
     const value = Math.round(Number(amount.replace(',', '.')) * 100) / 100;
+
     if (!selectedAccount) {
       setError('Select account');
       return;
@@ -73,30 +75,38 @@ export function TransferModal({
       setError('Insufficient funds');
       return;
     }
+
     setChecking(true);
-    const res = await fetch('http://localhost:4000/api/accounts/transfer', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({
-        fromCurrency: selectedCurrency,
-        amount: value,
-        iban,
-        title,
-        name,
-      }),
-    });
-    setChecking(false);
-    if (res.ok) {
-      setAmount('');
-      setIban(initialIban || '');
-      setTitle('');
-      setName(initialName || '');
-      onClose();
-      if (onSuccess) onSuccess();
-    } else {
-      const data = await res.json();
-      setError(data.error || 'Transfer failed');
+
+    try {
+      const res = await fetch('/api/transfer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fromCurrency: selectedCurrency,
+          amount: value,
+          iban,
+          title,
+          name,
+        }),
+      });
+
+      if (res.ok) {
+        setAmount('');
+        setIban(initialIban || '');
+        setTitle('');
+        setName(initialName || '');
+        onClose();
+        if (onSuccess) onSuccess();
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Transfer failed');
+      }
+    } catch (err) {
+      console.error('Transfer error:', err);
+      setError('Connection error. Please try again later.');
+    } finally {
+      setChecking(false);
     }
   };
 

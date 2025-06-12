@@ -11,16 +11,19 @@ export async function GET(req: NextRequest) {
 
   const user = await prisma.user.findUnique({
     where: { login: session.user.login },
+    select: {
+      id: true,
+      login: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      iban: true,
+    },
   });
 
   if (!user) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
 
-  const accounts = await prisma.account.findMany({
-    where: { userId: user.id },
-    select: { id: true, currency: true, balance: true, userId: true },
-  });
-
-  return NextResponse.json(accounts);
+  return NextResponse.json({ user });
 }

@@ -81,23 +81,26 @@ export function AccountActionModal({
     }
 
     const endpoint =
-      submitLabel === 'Withdraw'
-        ? '/api/accounts/withdraw'
-        : '/api/accounts/deposit';
+      submitLabel === 'Withdraw' ? '/api/withdraw' : '/api/deposit';
 
-    const res = await fetch(`http://localhost:4000${endpoint}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ amount: value, currency }),
-    });
-    if (res.ok) {
-      setAmount('');
-      onClose();
-      if (onSuccess) onSuccess();
-    } else {
-      const data = await res.json();
-      setError(data.error || 'Operation failed');
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: value, currency }),
+      });
+
+      if (res.ok) {
+        setAmount('');
+        onClose();
+        if (onSuccess) onSuccess();
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Operation failed');
+      }
+    } catch (err) {
+      console.error('Operation error:', err);
+      setError('Connection error. Please try again later.');
     }
   };
 

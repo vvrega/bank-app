@@ -1,17 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Modal,
   Text,
   Group,
-  Box,
   ScrollArea,
   Loader,
+  Box,
   CloseButton,
 } from '@mantine/core';
 import {
   TransactionHistoryItem,
   Transaction,
-} from '@/components/MainLayout/HomePanel/AccountsHomeTab/TransactionHistoryItem/TransactionHistoryItem';
+} from '../MainLayout/HomePanel/AccountsHomeTab/TransactionHistoryItem/TransactionHistoryItem';
 
 interface Account {
   id: number;
@@ -41,19 +41,29 @@ export function ContactTransactionsModal({
   useEffect(() => {
     const fetchContactTransactions = async () => {
       if (!opened) return;
+
       setLoading(true);
-      const res = await fetch(
-        'http://localhost:4000/api/transactions?contactUserId=' + contactUserId,
-        { credentials: 'include' }
-      );
-      if (res.ok) {
-        const data = await res.json();
-        setTransactions(data.transactions);
-      } else {
+
+      try {
+        const res = await fetch(
+          `/api/transactions?contactUserId=${contactUserId}`
+        );
+
+        if (res.ok) {
+          const data = await res.json();
+          setTransactions(data.transactions || []);
+        } else {
+          console.error('Failed to fetch transactions:', await res.text());
+          setTransactions([]);
+        }
+      } catch (err) {
+        console.error('Transaction fetch error:', err);
         setTransactions([]);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
+
     fetchContactTransactions();
   }, [opened, contactUserId]);
 
@@ -63,37 +73,40 @@ export function ContactTransactionsModal({
       onClose={onClose}
       centered
       withCloseButton={false}
+      size="lg"
       padding="lg"
       radius="md"
-      size="lg"
       overlayProps={{ blur: 2 }}
     >
       <Group justify="space-between" align="center" mb="md">
         <Text size="lg" fw={700}>
-          Transactions with this contact
+          Transaction history
         </Text>
         <CloseButton onClick={onClose} />
       </Group>
-      <ScrollArea h={400}>
-        <Box>
-          {loading ? (
-            <Loader />
-          ) : transactions.length === 0 ? (
-            <Text size="sm" c="dimmed">
-              No transactions found.
-            </Text>
-          ) : (
-            transactions.map((transaction) => (
+
+      {loading ? (
+        <Group justify="center" p="xl">
+          <Loader />
+        </Group>
+      ) : transactions.length === 0 ? (
+        <Text ta="center" fw={500} p="xl">
+          No transactions found with this contact
+        </Text>
+      ) : (
+        <ScrollArea h="400px" mb="sm">
+          <Box p="md">
+            {transactions.map((transaction) => (
               <TransactionHistoryItem
                 key={transaction.id}
                 transaction={transaction}
                 accounts={accounts}
                 currentUserId={currentUserId}
               />
-            ))
-          )}
-        </Box>
-      </ScrollArea>
+            ))}
+          </Box>
+        </ScrollArea>
+      )}
     </Modal>
   );
 }

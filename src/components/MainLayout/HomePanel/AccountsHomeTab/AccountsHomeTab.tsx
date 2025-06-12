@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { TransactionHistoryItem } from './TransactionHistoryItem/TransactionHistoryItem';
 import { Box, Button, Group, ScrollArea, Text } from '@mantine/core';
@@ -15,6 +15,8 @@ import { AccountActionModal } from '@/components/Modals/AccountActionModal';
 import { ChangeAccountModal } from '@/components/Modals/ChangeAccountModal';
 import { TransferModal } from '@/components/Modals/TransferModal';
 import { useSession } from 'next-auth/react';
+
+import { Transaction } from './TransactionHistoryItem/TransactionHistoryItem';
 
 export type Currency = 'PLN' | 'USD' | 'EUR' | 'GBP';
 
@@ -36,7 +38,7 @@ export const AccountsHomeTab = () => {
   >(undefined);
   const { data: session } = useSession();
 
-  const { data: accounts = [], refetch: refetchAccounts } = useQuery({
+  const { data: accountsData = [], refetch: refetchAccounts } = useQuery({
     queryKey: ['accounts'],
     queryFn: async () => {
       const res = await fetch('/api/accounts');
@@ -45,15 +47,27 @@ export const AccountsHomeTab = () => {
     },
   });
 
-  const { data: transactions = [], refetch: refetchTransactions } = useQuery({
+  const {
+    data: transactionsData = { transactions: [] },
+    refetch: refetchTransactions,
+  } = useQuery({
     queryKey: ['transactions'],
     queryFn: async () => {
       const res = await fetch('/api/transactions');
       if (!res.ok) throw new Error('Failed to fetch transactions');
       return res.json();
     },
-    enabled: !!accounts.length,
+    enabled: !!accountsData.length,
   });
+
+  const transactions = Array.isArray(transactionsData.transactions)
+    ? transactionsData.transactions
+    : [];
+
+  const accounts = useMemo(
+    () => (Array.isArray(accountsData) ? accountsData : []),
+    [accountsData]
+  );
 
   useEffect(() => {
     if (!selectedCurrency && accounts.length) {
@@ -80,7 +94,6 @@ export const AccountsHomeTab = () => {
     <Box
       className={`${sharedStyles.tabsPanelContainer} ${styles.mainContainer}`}
     >
-      {/* Saldo i zmiana konta */}
       <Box>
         <Group
           className={styles.balanceContainer}
@@ -158,25 +171,23 @@ export const AccountsHomeTab = () => {
           </Button>
         </Group>
       </Box>
-      {/* Transakcje */}
       <Box>
         <Text ml="lg" mt="xl" size="14px">
           Transactions
         </Text>
         <ScrollArea h="30vh" mb="sm">
           <Box m="lg">
-            {transactions.map((transaction: any) => (
+            {transactions.map((transaction: Transaction) => (
               <TransactionHistoryItem
                 key={transaction.id}
                 transaction={transaction}
-                accounts={accounts}
+                accounts={accounts as Account[]}
                 currentUserId={Number(session?.user?.id) || 0}
               />
             ))}
           </Box>
         </ScrollArea>
       </Box>
-      {/* Modale */}
       <AccountActionModal
         opened={depositOpened}
         onClose={() => setDepositOpened(false)}

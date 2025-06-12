@@ -11,6 +11,7 @@ import {
   Tooltip,
 } from '@mantine/core';
 import { IconCopy, IconCheck } from '@tabler/icons-react';
+import { useSession } from 'next-auth/react';
 
 import sharedStyles from '@/components/MainLayout/HomePanel/HomePanel.module.css';
 import { TransferModal } from '@/components/Modals/TransferModal';
@@ -39,7 +40,11 @@ interface ContactListProps {
   accounts: Account[];
 }
 
-export function ContactList({ contacts, accounts }: ContactListProps) {
+export function ContactList({
+  contacts = [],
+  accounts = [],
+}: ContactListProps) {
+  const { data: session } = useSession();
   const [transferModalOpened, setTransferModalOpened] = useState(false);
   const [transferContact, setTransferContact] = useState<Contact | null>(null);
   const [historyModalOpened, setHistoryModalOpened] = useState(false);
@@ -50,8 +55,10 @@ export function ContactList({ contacts, accounts }: ContactListProps) {
     if (accounts.length > 0 && accounts[0].userId) {
       setCurrentUserId(accounts[0].userId);
     } else {
-      fetch('http://localhost:4000/api/me', { credentials: 'include' })
-        .then((res) => (res.ok ? res.json() : null))
+      fetch('/api/me')
+        .then((res) =>
+          res.ok ? res.json() : Promise.reject('Failed to fetch user data')
+        )
         .then((data) => {
           if (data && data.user && data.user.id) {
             setCurrentUserId(data.user.id);
@@ -59,9 +66,12 @@ export function ContactList({ contacts, accounts }: ContactListProps) {
             setCurrentUserId(null);
           }
         })
-        .catch(() => setCurrentUserId(null));
+        .catch((err) => {
+          console.error('Error fetching user data:', err);
+          setCurrentUserId(null);
+        });
     }
-  }, [accounts]);
+  }, [accounts, session]);
 
   const handleNewTransfer = (contact: Contact) => {
     setTransferContact(contact);
@@ -73,11 +83,13 @@ export function ContactList({ contacts, accounts }: ContactListProps) {
     setHistoryModalOpened(true);
   };
 
+  const contactsArray = Array.isArray(contacts) ? contacts : [];
+
   return (
     <Box>
       <ScrollArea h="45vh" mb="sm">
         <Stack gap="sm" m="lg">
-          {contacts.map((contact) => (
+          {contactsArray.map((contact) => (
             <Paper
               key={contact.id}
               style={{

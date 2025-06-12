@@ -10,7 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 export const ContactsHomeTab = () => {
   const [modalOpened, setModalOpened] = useState(false);
 
-  const { data: contacts = [], refetch: refetchContacts } = useQuery({
+  const { data: contactsData, refetch: refetchContacts } = useQuery({
     queryKey: ['contacts'],
     queryFn: async () => {
       const res = await fetch('/api/contacts');
@@ -19,7 +19,7 @@ export const ContactsHomeTab = () => {
     },
   });
 
-  const { data: accounts = [] } = useQuery({
+  const { data: accountsData = [] } = useQuery({
     queryKey: ['accounts'],
     queryFn: async () => {
       const res = await fetch('/api/accounts');
@@ -27,6 +27,9 @@ export const ContactsHomeTab = () => {
       return res.json();
     },
   });
+
+  const contacts = contactsData?.contacts || [];
+  const accounts = accountsData?.accounts || accountsData || [];
 
   return (
     <Box

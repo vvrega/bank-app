@@ -6,7 +6,7 @@ import {
   IconArrowsExchange,
 } from '@tabler/icons-react';
 
-type TransactionType = 'Deposit' | 'Withdraw' | 'Transfer' | 'Exchange';
+export type TransactionType = 'Deposit' | 'Withdraw' | 'Transfer' | 'Exchange';
 
 export interface Transaction {
   id: string | number;

@@ -1,9 +1,9 @@
-import { Modal, Text, Group, Box, CloseButton, Paper } from '@mantine/core';
+import { Modal, Text, Paper, Group, Box, CloseButton } from '@mantine/core';
 
-import type { Currency } from '@/components/MainLayout/HomePanel/AccountsHomeTab/AccountsHomeTab';
+type Currency = 'PLN' | 'USD' | 'EUR' | 'GBP';
 
 interface Account {
-  currency: 'PLN' | 'USD' | 'EUR' | 'GBP';
+  currency: Currency;
   balance: number;
 }
 

@@ -16,13 +16,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing data' }, { status: 400 });
   }
 
-  if (numericAmount > 100000) {
-    return NextResponse.json(
-      { error: 'Maximum deposit is 100000' },
-      { status: 400 }
-    );
-  }
-
   const user = await prisma.user.findUnique({
     where: { login: session.user.login },
   });
@@ -39,17 +32,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Account not found' }, { status: 404 });
   }
 
+  if (numericAmount > Number(account.balance)) {
+    return NextResponse.json({ error: 'Insufficient funds' }, { status: 400 });
+  }
+
   await prisma.$transaction([
     prisma.account.update({
       where: { id: account.id },
-      data: { balance: { increment: numericAmount } },
+      data: { balance: { decrement: numericAmount } },
     }),
     prisma.transaction.create({
       data: {
-        toAccountId: account.id,
+        fromAccountId: account.id,
         amount: numericAmount,
         currency,
-        type: 'Deposit',
+        type: 'Withdraw',
       },
     }),
   ]);
