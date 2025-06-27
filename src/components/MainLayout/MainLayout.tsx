@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 import { useMediaQuery } from '@mantine/hooks';
 import { signOut } from 'next-auth/react';
 import { useAuthSession } from '@/hooks/api/useAuthSession';
+import { useQueryClient } from '@tanstack/react-query';
 
 const MainLayout = () => {
   const router = useRouter();
@@ -21,6 +22,7 @@ const MainLayout = () => {
   const [drawerOpened, setDrawerOpened] = useState(false);
   const isMobile = useMediaQuery(`(max-width: ${768}px)`);
   const [tab, setTab] = useState<string | null>('home');
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -37,6 +39,7 @@ const MainLayout = () => {
 
   const handleLogout = async () => {
     await signOut({ redirect: false });
+    queryClient.clear();
     router.replace('/');
   };
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 
 import {
   TextInput,
@@ -20,6 +21,7 @@ type LoginForm = {
 export function Login({ onSwitch }: { onSwitch: () => void }) {
   const router = useRouter();
   const [error, setError] = useState('');
+  const queryClient = useQueryClient();
 
   const {
     register,
@@ -35,7 +37,9 @@ export function Login({ onSwitch }: { onSwitch: () => void }) {
         login: data.login,
         password: data.password,
       });
+
       if (res?.ok) {
+        queryClient.clear();
         router.replace('/dashboard');
       } else if (res?.error) {
         setError('Invalid login or password');
