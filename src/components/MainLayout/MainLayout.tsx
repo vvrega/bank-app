@@ -10,19 +10,30 @@ import {
 } from '@tabler/icons-react';
 import { HomePanel } from './HomePanel/HomePanel';
 import { SettingsPanel } from './SettingsPanel/SettingsPanel';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useMediaQuery } from '@mantine/hooks';
 import { signOut } from 'next-auth/react';
 import { useAuthSession } from '@/hooks/api/useAuthSession';
 import { useQueryClient } from '@tanstack/react-query';
 
-const MainLayout = () => {
+interface MainLayoutProps {
+  initialTab?: string;
+}
+
+const MainLayout = ({ initialTab = 'home' }: MainLayoutProps) => {
   const router = useRouter();
+  const pathname = usePathname();
   const { data: session, status } = useAuthSession();
   const [drawerOpened, setDrawerOpened] = useState(false);
   const isMobile = useMediaQuery(`(max-width: ${768}px)`);
-  const [tab, setTab] = useState<string | null>('home');
+  const [tab, setTab] = useState<string | null>(initialTab);
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (pathname === '/home') setTab('home');
+    else if (pathname === '/stocks') setTab('stocks');
+    else if (pathname === '/settings') setTab('settings');
+  }, [pathname]);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -41,6 +52,19 @@ const MainLayout = () => {
     await signOut({ redirect: false });
     queryClient.clear();
     router.replace('/');
+  };
+
+  const handleTabChange = (value: string | null) => {
+    if (!value) return;
+
+    setTab(value);
+
+    if (value === 'logout') {
+      handleLogout();
+      return;
+    }
+
+    router.push(`/${value}`);
   };
 
   const navTabs = (
@@ -72,7 +96,6 @@ const MainLayout = () => {
           value="logout"
           className={styles.tabElement}
           leftSection={<IconLogout size={20} />}
-          onClick={handleLogout}
         >
           Log out
         </Tabs.Tab>
@@ -115,7 +138,7 @@ const MainLayout = () => {
             </Group>
             <Tabs
               value={tab}
-              onChange={setTab}
+              onChange={handleTabChange}
               variant="pills"
               orientation="vertical"
               color="white"
@@ -144,7 +167,7 @@ const MainLayout = () => {
           </Group>
           <Tabs
             value={tab}
-            onChange={setTab}
+            onChange={handleTabChange}
             variant="pills"
             orientation="vertical"
             color="white"
@@ -154,7 +177,7 @@ const MainLayout = () => {
         </>
       )}
       <Box className={styles.panelsBox}>
-        <Tabs value={tab} onChange={setTab}>
+        <Tabs value={tab} onChange={handleTabChange}>
           <Tabs.Panel value="home" className={styles.tabsPanel}>
             <HomePanel />
           </Tabs.Panel>

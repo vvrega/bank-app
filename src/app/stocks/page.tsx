@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import MainLayout from '@/components/MainLayout/MainLayout';
 import { authOptions } from '@/lib/auth';
 
-export default async function Dashboard() {
+export default async function StocksPage() {
   const session = await getServerSession(authOptions);
 
   if (!session) {
@@ -11,8 +11,8 @@ export default async function Dashboard() {
   }
 
   return (
-    <main>
-      <MainLayout />
-    </main>
+    <>
+      <MainLayout initialTab="stocks" />
+    </>
   );
 }

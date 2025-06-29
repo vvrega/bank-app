@@ -8,12 +8,12 @@ export default function Home() {
   const [showRegister, setShowRegister] = useState(false);
 
   return (
-    <main>
+    <>
       {showRegister ? (
         <Register onSwitch={() => setShowRegister(false)} />
       ) : (
         <Login onSwitch={() => setShowRegister(true)} />
       )}
-    </main>
+    </>
   );
 }

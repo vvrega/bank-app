@@ -40,7 +40,7 @@ export function Login({ onSwitch }: { onSwitch: () => void }) {
 
       if (res?.ok) {
         queryClient.clear();
-        router.replace('/dashboard');
+        router.replace('/home');
       } else if (res?.error) {
         setError('Invalid login or password');
       } else {
