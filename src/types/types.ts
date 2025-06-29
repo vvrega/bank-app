@@ -18,6 +18,7 @@ export interface Transaction {
   date: string;
   description?: string;
   targetCurrency?: string;
+  targetAmount?: number;
   targetUser?: string;
   fromAccountId?: number;
   toAccountId?: number;

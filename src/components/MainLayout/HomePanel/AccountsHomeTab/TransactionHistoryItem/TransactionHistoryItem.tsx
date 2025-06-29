@@ -10,6 +10,8 @@ import { Transaction, TransactionType } from '@/types/types';
 interface Account {
   id: number;
   userId: number;
+  currency: string;
+  balance: number;
 }
 
 const typeConfig: Record<
@@ -52,6 +54,25 @@ export function TransactionHistoryItem({
   const isOutgoing =
     transaction.type === 'Transfer' &&
     transaction.fromAccountUserId === currentUserId;
+
+  const isExchange = transaction.type === 'Exchange';
+
+  let targetAmount = 0;
+  let extractedTargetCurrency = '';
+
+  if (isExchange) {
+    if (transaction.description) {
+      const match = transaction.description.match(/to ([0-9.]+) ([A-Z]{3})/);
+      if (match) {
+        if (match[1] && !targetAmount) {
+          targetAmount = parseFloat(match[1]);
+        }
+        if (match[2]) {
+          extractedTargetCurrency = match[2];
+        }
+      }
+    }
+  }
 
   const sign =
     transaction.type === 'Transfer'
@@ -109,10 +130,23 @@ export function TransactionHistoryItem({
           </Text>
         )}
       </Box>
-      <Text fw={700} size="sm" ml="auto" c={color}>
-        {sign}
-        {Math.abs(transaction.amount).toFixed(2)} {transaction.currency}
-      </Text>
+      <Box ml="auto" ta="right">
+        {isExchange ? (
+          <>
+            <Text fw={700} size="sm" c="#c92a2a">
+              -{Math.abs(transaction.amount).toFixed(2)} {transaction.currency}
+            </Text>
+            <Text fw={700} size="sm" c="#228B22">
+              +{targetAmount.toFixed(2)} {extractedTargetCurrency}
+            </Text>
+          </>
+        ) : (
+          <Text fw={700} size="sm" c={color}>
+            {sign}
+            {Math.abs(transaction.amount).toFixed(2)} {transaction.currency}
+          </Text>
+        )}
+      </Box>
     </Group>
   );
 }

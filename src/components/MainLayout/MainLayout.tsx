@@ -10,6 +10,7 @@ import {
 } from '@tabler/icons-react';
 import { HomePanel } from './HomePanel/HomePanel';
 import { SettingsPanel } from './SettingsPanel/SettingsPanel';
+import { StocksPanel } from './StocksPanel/StocksPanel';
 import { usePathname, useRouter } from 'next/navigation';
 import { useMediaQuery } from '@mantine/hooks';
 import { signOut } from 'next-auth/react';
@@ -182,7 +183,7 @@ const MainLayout = ({ initialTab = 'home' }: MainLayoutProps) => {
             <HomePanel />
           </Tabs.Panel>
           <Tabs.Panel value="stocks" className={styles.tabsPanel}>
-            Stocks tab content
+            <StocksPanel />
           </Tabs.Panel>
           <Tabs.Panel value="settings" className={styles.tabsPanel}>
             <SettingsPanel />
