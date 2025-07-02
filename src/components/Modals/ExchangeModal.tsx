@@ -142,6 +142,7 @@ export function ExchangeModal({
       opened={opened}
       onClose={onClose}
       title="Currency Exchange"
+      withCloseButton
       centered
       padding="lg"
       radius="md"
@@ -159,26 +160,25 @@ export function ExchangeModal({
             style={{ flex: 1 }}
             required
           />
-
-          <NumberInput
-            label="Amount"
-            value={amount}
-            onChange={(val) => setAmount(val?.toString() || '')}
-            min={0}
-            step={0.01}
+          <Select
+            label="To Currency"
+            placeholder="Select target currency"
+            value={to}
+            onChange={(val) => setTo(val as Currency)}
+            data={targetCurrencyOptions}
             style={{ flex: 1 }}
             required
           />
         </Group>
 
-        <Select
-          label="To Currency"
-          placeholder="Select target currency"
-          value={to}
-          onChange={(val) => setTo(val as Currency)}
-          data={targetCurrencyOptions}
-          mb="md"
+        <NumberInput
+          label="Amount"
+          value={amount}
+          onChange={(val) => setAmount(val?.toString() || '')}
+          min={0}
+          step={0.01}
           required
+          mb="md"
         />
 
         {from && to && exchangeRate && (
@@ -208,9 +208,6 @@ export function ExchangeModal({
         )}
 
         <Group justify="flex-end">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
           <Button
             onClick={handleExchange}
             loading={exchange.isPending}

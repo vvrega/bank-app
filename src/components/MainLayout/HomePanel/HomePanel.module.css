@@ -15,6 +15,10 @@
   margin-top: 24px;
 }
 
+.stocksPanelContainer {
+  background-color: #f1f3f5 !important;
+}
+
 .headerTitle {
   font-weight: 700;
   font-size: 40px;

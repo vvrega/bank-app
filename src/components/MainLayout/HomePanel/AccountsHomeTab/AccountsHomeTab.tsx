@@ -123,7 +123,7 @@ export const AccountsHomeTab = () => {
                 PLN: 'Polish Zloty',
                 USD: 'US Dollar',
                 EUR: 'Euro',
-                GBP: 'British Pound',
+                GBP: 'Great Britain Pound',
               }[selectedAccount.currency as Currency]
             : ''}
         </Text>
@@ -145,14 +145,6 @@ export const AccountsHomeTab = () => {
             onClick={withdrawModal.open}
           >
             Withdraw
-          </Button>
-          <Button
-            className={sharedStyles.actionButton}
-            variant="light"
-            size="xs"
-            leftSection={<IconArrowsExchange size={14} />}
-          >
-            Exchange
           </Button>
           <Button
             className={sharedStyles.actionButton}
