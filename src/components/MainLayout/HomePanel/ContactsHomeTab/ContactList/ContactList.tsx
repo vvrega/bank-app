@@ -9,8 +9,15 @@ import {
   CopyButton,
   ScrollArea,
   Tooltip,
+  Flex,
+  Divider,
 } from '@mantine/core';
-import { IconCopy, IconCheck } from '@tabler/icons-react';
+import {
+  IconCopy,
+  IconCheck,
+  IconSend,
+  IconHistory,
+} from '@tabler/icons-react';
 
 import sharedStyles from '@/components/MainLayout/HomePanel/HomePanel.module.css';
 import { TransferModal } from '@/components/Modals/TransferModal';
@@ -62,16 +69,13 @@ export function ContactList({
       <ScrollArea h="45vh" mb="sm">
         <Stack gap="sm" m="lg">
           {contactsArray.map((contact) => (
-            <Paper
-              key={contact.id}
-              style={{
-                borderBottom: '1px solid #e0e0e0',
-                borderRadius: '0px',
-                margin: '0 24px',
-              }}
-            >
-              <Group>
-                <Box>
+            <Paper key={contact.id}>
+              <Flex direction="row" justify="space-between" wrap="wrap">
+                <Flex
+                  align="flex-start"
+                  justify="space-between"
+                  direction="column"
+                >
                   <Text fw={500}>{contact.name}</Text>
                   {contact.contactUser && (
                     <Text size="xs" c="dimmed" mb={2}>
@@ -107,28 +111,28 @@ export function ContactList({
                       )}
                     </CopyButton>
                   </Group>
-                  <Group gap={0}>
-                    <Button
-                      size="xs"
-                      variant="light"
-                      className={sharedStyles.stringButton}
-                      style={{ fontSize: '12px' }}
-                      onClick={() => handleNewTransfer(contact)}
-                    >
-                      New transfer
-                    </Button>
-                    <Button
-                      size="xs"
-                      variant="light"
-                      className={sharedStyles.stringButton}
-                      style={{ fontSize: '12px' }}
-                      onClick={() => handleSeeHistory(contact)}
-                    >
-                      See transactions history
-                    </Button>
-                  </Group>
-                </Box>
-              </Group>
+                </Flex>
+                <Group gap={4} mt="sm" mb="xs">
+                  <Button
+                    size="sm"
+                    variant="subtle"
+                    color="blue"
+                    leftSection={<IconSend size={16} />}
+                    onClick={() => handleNewTransfer(contact)}
+                  >
+                    Transfer
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="subtle"
+                    leftSection={<IconHistory size={16} />}
+                    onClick={() => handleSeeHistory(contact)}
+                  >
+                    History
+                  </Button>
+                </Group>
+              </Flex>
+              <Divider />
             </Paper>
           ))}
         </Stack>
