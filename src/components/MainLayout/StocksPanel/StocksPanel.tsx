@@ -1,5 +1,3 @@
-'use client';
-
 import { useState } from 'react';
 import { Box, Text, Stack, ScrollArea } from '@mantine/core';
 import sharedStyles from '../HomePanel/HomePanel.module.css';

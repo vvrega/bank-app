@@ -1,5 +1,3 @@
-'use client';
-
 import { Button, Group, Loader, Paper, Text, Flex, Stack } from '@mantine/core';
 import { IconArrowsExchange } from '@tabler/icons-react';
 import { Currency } from '@/types/types';
